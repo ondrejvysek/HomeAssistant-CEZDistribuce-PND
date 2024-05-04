@@ -23,7 +23,7 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
    - Naplánování aktualizace
    - HACS
    - ApexCharts Card 
-3. Tvorba Dashboardu
+3. [Tvorba Dashboardu](#tvorba-dashboardu)
 
 
 ## Distribuční portál
