@@ -136,6 +136,20 @@ Ověřte funkčnost nastavení (AppDaemon, skript a automatizace) > vpravo naho�
 
 Chod skriptu trvá cca 50vteřin, poté byste měli vidět odpovídající entity v HA.
 
+YAML kód automatizace
+```
+alias: Run PDN
+description: ""
+trigger:
+  - platform: time
+    at: "00:30:00"
+condition: []
+action:
+  - event: run_pnd
+    event_data: {}
+mode: single
+```
+
 ### Řešení problémů se skriptem
 pokud se vyskytne problém (např data se nestahují), přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon. Pak je dostupný log v cestě /homeassistant/appdaemon/pnd.log
 
