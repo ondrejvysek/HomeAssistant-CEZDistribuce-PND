@@ -87,7 +87,7 @@ appdaemon:
   plugins:
     HASS:
       type: hass
-      ha_url: http://http://homeassistant.local/:8123
+      ha_url: http://192.168.1.100:8123
       token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
   app_dir: /homeassistant/appdaemon/apps
 http:
@@ -124,5 +124,18 @@ pnd:
 7. do složky _apps_ nahrajte soubor [pnd.py](/pnd.py)
 8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
 
-Tím je kom
+### Nastavení automatické aktualizace dat
+Skript, který získává data vyčkává na událost _run_pnd_ v rámci Home Assistant. Nejsnazší cestou je vytvoření automatizace, která v pravidelném čase stažení dat spustí.
+1. V Home Assistant zvolit "Nastavení" > "Automatizace a scény"
+2. Vytvořit novou automatizaci
+   * parametr "Když" > "Přidat spouštěč" zvolit "Čas" a zvolte čas, ve kterém se má spouštět. Data na portále jsou dostupná několik minut po půlnoci, můžete nastavit např. 00:30:00 AM tedy 30 minut po půlnoci se spustí.
+   * parametr "Pak provést" zvolit "Ruční událost" do "Typ události" zadat _run_pnd_
+3. Uložit automatizaci - zvolte jméno automatizace, které si přejete
+
+Ověřte funkčnost nastavení (AppDaemon, skript a automatizace) > vpravo nahoře tři tečky > "Spustit"
+
+Chod skriptu trvá cca 50vteřin, poté byste měli vidět odpovídající entity v HA.
+
+### Řešení problémů
+pokud se vyskytne problém (např data se nestahují), přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon. Pak je dostupný log v cestě /homeassistant/appdaemon/pnd.log
 
