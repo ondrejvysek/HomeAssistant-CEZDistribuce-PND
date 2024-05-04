@@ -1,1 +1,1 @@
-# HomeAssistant-CEZPortalDistribuce-
+# Home Assistant ČEZ Distribuce Portál Naměřených Dat
