@@ -21,8 +21,8 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
    - AddOn File Editor (nebo jakoukoliv možnost úpravy konfiguračních souborů v HA)
    - Script pro stažení dat
    - Naplánování aktualizace
-   - HACS (https://hacs.xyz/)
-   - ApexCharts Card (https://github.com/RomRider/apexcharts-card)
+   - HACS
+   - ApexCharts Card 
 3. Tvorba Dashboardu
 
 
@@ -136,6 +136,215 @@ Ověřte funkčnost nastavení (AppDaemon, skript a automatizace) > vpravo naho�
 
 Chod skriptu trvá cca 50vteřin, poté byste měli vidět odpovídající entity v HA.
 
-### Řešení problémů
+### Řešení problémů se skriptem
 pokud se vyskytne problém (např data se nestahují), přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon. Pak je dostupný log v cestě /homeassistant/appdaemon/pnd.log
 
+### Instalace HACS
+Postup instalalce je uvedený na [stránkách projektu](https://hacs.xyz/)
+
+### Instalace ApexCharts Card
+Postup instalace je uvedený na [stránkách projektu](https://github.com/RomRider/apexcharts-card)
+
+## Tvorba Dashboardu
+Cílem návodu není do detailu popisovat jak v Home Assistant vytvářet dashboardy, níže uvádím ukázky grafů, které lze s výše získaných dat vytvořit. Pokud vytvoříte nějaký super graf, přidejte kód zde na Gitu.
+
+Pokud jste postupovali dle návodu a máte data v Home Assistantu, pak stačí vytvořit novou "Manuální kartu" a do ní zkopírovat kód jednotlivých karet níže.
+
+### PND Včerejší stav spotřeby/výroby
+Využívá senzory _sensor.pnd_consumption_ a _sensor.pnd_production_ které obsahují denní spotřebu resp výrobu za **předchozí den**. Senzory jsou třídy (device_class) energy a jsou tedy automaticky ukládány do dlouhodobých dat v HomeAssistant
+```
+type: custom:apexcharts-card
+stacked: true
+graph_span: 7d
+span:
+  end: day
+header:
+  show: true
+  title: PND Včerejší stav
+series:
+  - entity: sensor.pnd_consumption
+    name: Spotřeba
+    color: var(--error-color)
+    opacity: 0.8
+    invert: true
+    type: column
+    group_by:
+      func: last
+      duration: 1d
+  - entity: sensor.pnd_production
+    name: Výroba
+    color: var(--success-color)
+    opacity: 0.8
+    type: column
+    group_by:
+      func: last
+      duration: 1d
+```
+![](/obrazky/pnd-vcerejsi-stav.png)
+
+### Přehled celkové výroby / spotřeby
+Používá kartu rychlý náhled. Jsou využita data ze senzorů _sensor.pnd_total_interval_consumption_ resp _sensor.pnd_total_interval_production_
+
+```
+show_name: true
+show_icon: true
+show_state: true
+type: glance
+entities:
+  - entity: sensor.pnd_total_interval_consumption
+    name: Spotřeba za Období
+  - entity: sensor.pnd_total_interval_production
+    name: Výroba za Období
+state_color: false
+title: Celkový přehled
+```
+![](/obrazky/pnd-celkem-nahled.png)
+
+### Přehled celkové výroby / spotřeby v koláčovém grafu
+Jsou využita data ze senzorů _sensor.pnd_total_interval_consumption_ resp _sensor.pnd_total_interval_production_
+```
+type: custom:apexcharts-card
+chart_type: donut
+header:
+  show: true
+  title: PND Shrnutí Období
+apex_config:
+  plotOptions:
+    pie:
+      donut:
+        total:
+          show: true
+          showAlways: true
+series:
+  - entity: sensor.pnd_total_interval_production
+    name: Výroba
+    color: var(--success-color)
+  - entity: sensor.pnd_total_interval_consumption
+    name: Spotřeba
+    color: var(--error-color)
+```
+![](/obrazky/pnd-celkem-kolac.png)
+
+### Přehled výroby / spotřeby za posledních 10 dní
+Využívá data _sensor.pnd_data_
+
+```
+type: custom:apexcharts-card
+stacked: true
+graph_span: 10d
+span:
+  end: day
+header:
+  show: true
+  title: PND Posledních 10 dní
+series:
+  - entity: sensor.pnd_data
+    name: Výroba
+    attribute: production
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), entity.attributes.production[index]];
+      });
+    color: var(--success-color)
+    opacity: 0.8
+    invert: false
+    type: column
+  - entity: sensor.pnd_data
+    name: Spotřeba
+    attribute: consumption
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), entity.attributes.consumption[index]];
+      });
+    color: var(--error-color)
+    opacity: 0.8
+    invert: true
+    type: column
+```
+![](/obrazky/pnd-poslednich10dni.png)
+
+### Všechna data výroby / spotřeby z intervalu, agregace po týdnech
+
+```
+type: custom:apexcharts-card
+stacked: true
+graph_span: 1y
+span:
+  end: day
+header:
+  show: true
+  title: PND Historická Data (Týdenní agregace)
+series:
+  - entity: sensor.pnd_data
+    name: Výroba
+    attribute: production
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), entity.attributes.production[index]];
+      });
+    color: var(--success-color)
+    opacity: 0.8
+    invert: false
+    type: column
+    group_by:
+      func: sum
+      duration: 7d
+  - entity: sensor.pnd_data
+    name: Spotřeba
+    attribute: consumption
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), entity.attributes.consumption[index]];
+      });
+    color: var(--error-color)
+    opacity: 0.8
+    invert: true
+    type: column
+    group_by:
+      func: sum
+      duration: 7d
+```
+![](/obrazky/pnd-vsechnadata-tydenni.png)
+
+### Všechna data výroby / spotřeby z intervalu, agregace po měsících
+
+```
+type: custom:apexcharts-card
+stacked: true
+graph_span: 1y
+span:
+  end: day
+header:
+  show: true
+  title: PND Historická Data (Měsíční agregace)
+series:
+  - entity: sensor.pnd_data
+    name: Výroba
+    attribute: production
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), entity.attributes.production[index]];
+      });
+    color: var(--success-color)
+    opacity: 0.8
+    invert: false
+    type: column
+    group_by:
+      func: sum
+      duration: 1month
+  - entity: sensor.pnd_data
+    name: Spotřeba
+    attribute: consumption
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), entity.attributes.consumption[index]];
+      });
+    color: var(--error-color)
+    opacity: 0.8
+    invert: true
+    type: column
+    group_by:
+      func: sum
+      duration: 1month
+```
+![](/obrazky/pnd-vsechnadata-mesicni.png)
