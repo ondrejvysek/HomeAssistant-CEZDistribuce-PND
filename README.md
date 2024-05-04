@@ -12,10 +12,13 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
 
 ![](/obrazky/00-prehled.png)
 
+**POZOR: Pokud již používáte AppDaemon nebo máte ve svém HA výše uvedené entity, návod je potřeba odpovídajícím způsobem upravit, abyste zachovali to co již používáte. Takové úpravy nejsou v návodu uvedeny.**
+
 ## Co je potřeba
 1. Přihlášení do Distribučního Portálu
 2. [HomeAssistant](#homeassistant)
-   - AddOn AppDaemon (https://github.com/hassio-addons/addon-appdaemon)
+   - AddOn AppDaemon
+   - AddOn File Editor (nebo jakoukoliv možnost úpravy konfiguračních souborů v HA)
    - Script pro stažení dat
    - Naplánování aktualizace
    - HACS (https://hacs.xyz/)
@@ -42,3 +45,84 @@ Pokud toto čtete, více k čemu je HomeAssistant dobrý, pokud přeci ne, více
 
 ## AppDaemon
 AppDaemon je volně spojené, vícevláknové, sandboxované prostředí pro spouštění Pythonu, určené pro psaní automačních aplikací pro software domácí automatizace Home Assistant. Více o AppDaemon naleznete na [GitHubu autora](https://github.com/hassio-addons/addon-appdaemon)
+
+### Instalace a nastavení AppDaemon
+1. V nastavení HA zvolte "Doplňky" a dále pak "Obchod s doplňky"
+2. Vyhledejte AppDaemon, zvolte jej a klikněte na "Nainstalovat". Instalace dle rychlosti vašeho HW a internetu je hotova do několika minut.
+3. Po instalaci přejděte do nastavení AppDaemon
+   - v části "System Packages" přidejte _chromium-chromedriver_ a _chromium_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+   - v části "Python packages" přidejte _selenium_ a _pandas_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+   - Klikněte na "Uložit". Konfigurace by měla odpovídat obrázku níže
+4. Spusťte doplněk AppDaemon
+  
+![](/obrazky/04-appdaemon-config.png)
+
+### Konfigurace prostředí AppDaemon
+1. V nastavení File editoru vypněte možnost "Enforce Basepath" a zvolte "Uložit" (doplněk se restartuje)
+2. Spusťte File File Editor a otevřete soubor _addon_configs/a0d7b954_appdaemon/appdaemon.yaml_. (pozor je nutné ve File Editoru přejít do kořenové složky, proto se nastavovala volba výše.
+3. v části plugins>HASS doplňte
+```
+ha_url: http://ip-adresa-nebo-url-vaseho-ha:8123
+token: vas-token-ktery-jste-si-vytvorili-vyse
+```
+4. v části appdaemon doplňte `app_dir: /homeassistant/appdaemon/apps`
+5. přidejte část:
+```
+logs:
+  pnd:
+    name: pnd
+    filename: /homeassistant/appdaemon/pnd.log
+```
+6. soubor uložte a restartujte doplněk AppDaemon
+
+Celý appdaemon.yaml vypadá nějak takto:
+```
+---
+appdaemon:
+  latitude: 52.379189
+  longitude: 4.899431
+  elevation: 2
+  time_zone: Europe/Amsterdam
+  thread_duration_warning_threshold: 60
+  plugins:
+    HASS:
+      type: hass
+      ha_url: http://http://homeassistant.local/:8123
+      token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.xxxxxxxxxxxxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  app_dir: /homeassistant/appdaemon/apps
+http:
+  url: http://127.0.0.1:5050
+admin:
+api:
+hadashboard:
+logs:
+  pnd:
+    name: pnd
+    filename: /homeassistant/appdaemon/pnd.log
+```
+### Vytvoření aplikace PND v AppDaemon
+1. ve File Editor přejdět do složky homeassistant/
+2. vytvořte složku _appdaemon_ a přejděte do ní
+3. vytvořte složku _apps_ a přejděte do ní
+4. vytvořte složku _pnd_
+5. ve složce _apps_ vytvořte soubor _apps.yaml_ s obsahem:
+   * parametr **PNDUserName** je váš email s přihlášením do portálu
+   * parametr **PNDUserPassword** je heslo pro přihláše
+   * parametr **DataInterval** je interval dat, které budete chtít stahovat - například období fixace smlouvy. Nedoporučuji víc jak rok, mohlo by zahltit databázi.
+```
+---
+pnd:
+  module: pnd
+  class: pnd
+  log: pnd
+  PNDUserName: "vas email s prihlasenim do portalu distribuce"
+  PNDUserPassword: "vase heslo do portalu distribuce"
+  DataInterval: "27.10.2023 00:00 - 27.10.2024 00:00"
+  DownloadFolder: "/homeassistant/appdaemon/apps/pnd"
+```
+6. soubor uložte
+7. do složky _apps_ nahrajte soubor [pnd.py](/pnd.py)
+8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
+
+Tím je kom
+
