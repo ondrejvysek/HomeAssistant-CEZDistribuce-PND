@@ -17,12 +17,12 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
 ## Co je potřeba
 1. Přihlášení do Distribučního Portálu
 2. [HomeAssistant](#homeassistant)
-   - AddOn AppDaemon
+   - [AddOn AppDaemon](#appdaemon)
    - AddOn File Editor (nebo jakoukoliv možnost úpravy konfiguračních souborů v HA)
    - Script pro stažení dat
-   - Naplánování aktualizace
-   - HACS
-   - ApexCharts Card 
+   - [Naplánování automatické aktualizace](#nastavení-automatické-aktualizace-dat)
+   - [HACS](#instalace-hacs)
+   - [ApexCharts Card](#instalace-apexcharts-card)
 3. [Tvorba Dashboardu](#tvorba-dashboardu)
 
 
