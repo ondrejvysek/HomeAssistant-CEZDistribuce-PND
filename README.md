@@ -31,6 +31,8 @@ Zažádejte si o přihlášení do Distribučního Portálu na webu https://dip.
 
 Po přihlášení ověřte, že máte k dispozici váš elektroměr v sekci "Množina zařízení". V tuto chvíli script stahuje všechna data, tedy pokud máte více elektroměrů, nemusí script fungovat správně.
 
+**Pozn.: Skript prozatím neumí správně pracovat s uživatelskými sestavami a více elektroměry.** Zvolte v portále "Rychlá sestava" a "Všechny EANy" nebo odpovídající elektroměr a odhlaste se z portálu.
+
 ![](/obrazky/01-pnd.png)
 
 ## HomeAssistant
@@ -365,6 +367,7 @@ series:
 
 # Plány a nápady
 - [ ] Zpracování více EANů (Elektroměrů)
+- [ ] Skript nepracuje správně, pokud uživatel zvolil uživatelskou sestavu. Pro správné fungování prozatím zvolte ručně "Rychlá sestava" a portál zavřete, script bude fungovat správně. na řešení pracuji
 # Změny
 5.4.2024
 - [x] Změna vyhledání intervalu z ID na nadřazený název
