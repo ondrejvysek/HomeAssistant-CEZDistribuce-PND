@@ -362,3 +362,10 @@ series:
       duration: 1month
 ```
 ![](/obrazky/pnd-vsechnadata-mesicni.png)
+
+# Plány a nápady
+- [ ] Zpracování více EANů (Elektroměrů)
+# Změny
+5.4.2024
+- [x] Změna vyhledání intervalu z ID na nadřazený název
+- [x] Vynucení "Výchozí sestava" a "Všechny EANy"
