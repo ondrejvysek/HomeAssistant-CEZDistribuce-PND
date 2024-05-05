@@ -126,35 +126,59 @@ class pnd(hass.Hass):
     # Click the button
     tabulka_dat_button.click()
 
+    # Navigate to the dropdown based on its label "Sestava"
+    # Find the label by text, then navigate to the associated dropdown
+    wait = WebDriverWait(driver, 2)  # Adjust timeout as necessary
+    dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Sestava')]")))
+    dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__tags')]")  # This targets the clickable area of the custom dropdown
+    dropdown.click()  # Open the dropdown
+    # Wait for the dropdown options to appear and select "Rychlá sestava"
+    # Click the dropdown to expand it using JavaScript
+    driver.execute_script("arguments[0].click();", dropdown)
 
+    # Wait for options to be visible
+    option = wait.until(EC.visibility_of_element_located((By.XPATH, "//span[contains(text(), 'Rychlá sestava')]")))
+
+    # Navigate to the dropdown based on its label "Množina zařízení"
+    # Find the label by text, then navigate to the associated dropdown
+    wait = WebDriverWait(driver, 2)
+    dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
+    dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
+    dropdown.click()  # Open the dropdown
+    # Wait for the dropdown options to appear and select "Všechny EANy"
+    wait = WebDriverWait(driver, 2)
+
+    # Click the dropdown to expand it using JavaScript
+    driver.execute_script("arguments[0].click();", dropdown)
+
+    # Wait for options to be visible
+    option = wait.until(EC.visibility_of_element_located((By.XPATH, "//span[contains(text(), 'Všechny EANy')]")))
+
+    # Navigate to the dropdown based on its label "Období"
     # Use the label text to find the dropdown button
+    wait = WebDriverWait(driver, 2)
     dropdown_label = wait.until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'Období')]")))
     dropdown_container = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")
     dropdown_container.click()
 
     # Now, wait for the option labeled "Včera" to be visible and clickable, then click it
+    wait = WebDriverWait(driver, 2)
     option_vcera = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Včera') and contains(@class, 'multiselect__option')]")))
     option_vcera.click()
 
-
-#-----------------------------------------------------------
-#    # Locate the input field by its ID
-#    input_field = driver.find_element(By.ID, "window-120274-interval")
-
-#    # Clear the input field first if necessary
-#    input_field.clear()
-
-#    # Enter the date range into the input field
-#    date_range = datainterval
-#    input_field.send_keys(date_range)
-
-#    # Optionally, you can send ENTER or TAB if needed to process the input
-#    input_field.send_keys(Keys.ENTER)  # or Keys.TAB if you need to move out of the input field
-#    self.log(f"Data Interval Entered - '{datainterval}'")
-#-----------------------------------------------------------    
-    wait = WebDriverWait(driver, 10)
-    button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
-    button.click()
+    # Locate the input field "Vyhledat data" and click it
+    
+    # Check for the presence of the button and then check if it's clickable
+    try:
+        # Use a more specific XPath to ensure the correct button is targeted
+        button = wait.until(EC.presence_of_element_located((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
+        # After confirming the presence, wait until it's actually clickable
+        button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
+        button.click()
+        print("Button clicked successfully!")
+    except Exception as e:
+        print("Failed to find or click the button:", str(e))
+    
 
     time.sleep(5)
 
@@ -377,4 +401,3 @@ class pnd(hass.Hass):
     self.log("All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
     self.log("Sensor State Set to OFF")
-
