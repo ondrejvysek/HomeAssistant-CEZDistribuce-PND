@@ -287,7 +287,11 @@ class pnd(hass.Hass):
     option_vcera = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Vlastní') and contains(@class, 'multiselect__option')]")))
     option_vcera.click()
     # Locate the input field by its ID
-    input_field = driver.find_element(By.ID, "window-120274-interval")
+    ###input_field = driver.find_element(By.ID, "window-120274-interval")
+
+    # Locate the input by finding the label then navigating to the input
+    label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Vlastní období')]")))
+    input_field = label.find_element(By.XPATH, "./following::input[1]")  # Adjust based on actual DOM structure
 
     # Clear the input field first if necessary
     input_field.clear()
@@ -401,3 +405,4 @@ class pnd(hass.Hass):
     self.log("All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
     self.log("Sensor State Set to OFF")
+
