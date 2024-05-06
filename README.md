@@ -6,6 +6,7 @@ Po správném nastavení a spuštění scripu vznikou v Home Assistant tyto senz
 * sensor.pnd_data (obsahujíc data výroby a spotřeby za vámi zvolený interval - např období vyúčtování)
 * sensor.pnd_consumption a sensor.pnd_production v KWh je to den zpětně souhrn za den (data se vyčítají po půlnoci za den zpětně)
 * sensor.pnd_total_interval_consumption resp sensor.pnd_total_interval_production v KWh součet za období
+* sensor.pnd_production2consumption poměr mezi výrobou a spotřebou s max hodnotou 100% (např. jako indikátor Virtuální Baterie)
 * sensor.pnd_running kontrolní senzor který se zapne při spuštění a vypne při úspěšném dokončení (úspěšnost je +/-95%) lze použít v automatizaci pro opětovné spuštění skriptu
 
 Výsledkem pak může být například takovýto dashboard (návod na jeho výrobu je popsán níže)
@@ -114,6 +115,7 @@ logs:
    * parametr **PNDUserName** je váš email s přihlášením do portálu
    * parametr **PNDUserPassword** je heslo pro přihláše
    * parametr **DataInterval** je interval dat, které budete chtít stahovat - například období fixace smlouvy. Nedoporučuji víc jak rok, mohlo by zahltit databázi.
+   * parametr **EAN** je číslo (pouze číslo) vašeho elektroměru, který chcete sledovat v HA. zjistíte jej v Portále
 ```
 ---
 pnd:
@@ -123,6 +125,7 @@ pnd:
   PNDUserName: "vas email s prihlasenim do portalu distribuce"
   PNDUserPassword: "vase heslo do portalu distribuce"
   DataInterval: "27.10.2023 00:00 - 27.10.2024 00:00"
+  EAN: "3000012345"
   DownloadFolder: "/homeassistant/appdaemon/apps/pnd"
 ```
 6. soubor uložte
@@ -222,6 +225,8 @@ entities:
     name: Spotřeba za Období
   - entity: sensor.pnd_total_interval_production
     name: Výroba za Období
+  - entity: sensor.pnd_production2consumption
+    name: Využití VB
 state_color: false
 title: Celkový přehled
 ```
@@ -379,8 +384,15 @@ series:
 # Plány a nápady
 Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde na GitHubu
 - [ ] Zpracování více EANů (Elektroměrů)
-- [ ] Skript nepracuje správně, pokud uživatel zvolil uživatelskou sestavu. Pro správné fungování prozatím zvolte ručně "Rychlá sestava" a portál zavřete, script bude fungovat správně. na řešení pracuji
+- [ ] Uživatelské sestavy, které by obsahovaly VT/NT,...??
+      
 # Změny
+0.9.3: 6.5.2024
+- [x] Přidán sensor.pnd_production2consumption jako procentuální poměr mezi výrobou a spotřebou (např. využití Virtuální Baterie)
+- [x] Aktualizovaná karta celkového přehledu o sensor.pnd_production2consumption
+- [x] Přidán parametr EAN do konfigurace
+- [x] Přidán výběr EAN a Rychlá sestava pro případ, kdy si nastavení portálu pamatuje předchozí hodnoty EAN a uživatelské sestavy
+- [x] Lepší ošetření chybových stavů a rozložení Portálu
 0.9.2: 5.4.2024
 - [x] Změna vyhledání intervalu z ID na nadřazený název
 - [x] Vynucení "Výchozí sestava" a "Všechny EANy"
