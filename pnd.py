@@ -125,7 +125,7 @@ class pnd(hass.Hass):
     body = driver.find_element(By.TAG_NAME, 'body')
     # Wait for the button to be clickable
     wait = WebDriverWait(driver, 10)  # 10-second timeout
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
+    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
 
     # Click the button
     tabulka_dat_button.click()
