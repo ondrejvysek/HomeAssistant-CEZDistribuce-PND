@@ -1,3 +1,4 @@
+ver = "0.9.3"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -12,6 +13,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 
 def wait_for_download(directory, timeout=30):
     """
@@ -40,6 +42,7 @@ class pnd(hass.Hass):
     self.password = self.args["PNDUserPassword"]
     self.download_folder = self.args["DownloadFolder"]
     self.datainterval = self.args["DataInterval"]
+    self.EAN = self.args["EAN"]
     self.entity_id_consumption = 'sensor.pnd_consumption'
     self.entity_id_production = 'sensor.pnd_production'
     self.listen_event(self.run_pnd, "run_pnd")
@@ -117,8 +120,9 @@ class pnd(hass.Hass):
     if h1_element:
         self.log(f"H1 tag with text '{h1_text}' is present.")
     else:
-        self.error(f"H1 tag with text '{h1_text}' is not found.")
+        self.error(f"H1 tag with text '{h1_text}' is not found.", level="ERROR")
         sys.exit()
+    body = driver.find_element(By.TAG_NAME, 'body')
     # Wait for the button to be clickable
     wait = WebDriverWait(driver, 10)  # 10-second timeout
     tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
@@ -129,30 +133,73 @@ class pnd(hass.Hass):
     # Navigate to the dropdown based on its label "Sestava"
     # Find the label by text, then navigate to the associated dropdown
     wait = WebDriverWait(driver, 2)  # Adjust timeout as necessary
-    dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Sestava')]")))
-    dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__tags')]")  # This targets the clickable area of the custom dropdown
-    dropdown.click()  # Open the dropdown
-    # Wait for the dropdown options to appear and select "Rychlá sestava"
-    # Click the dropdown to expand it using JavaScript
-    driver.execute_script("arguments[0].click();", dropdown)
+    option_text = "Rychlá sestava"
 
-    # Wait for options to be visible
-    option = wait.until(EC.visibility_of_element_located((By.XPATH, "//span[contains(text(), 'Rychlá sestava')]")))
+    for _ in range(10):
+        dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Sestava')]")))
+        dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__tags')]")
+        dropdown.click()
+
+        # Select the option containing the text
+        option = wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[contains(text(), '{option_text}')]")))
+        option.click()
+        body.click()
+        # Check if the span contains "Rychlá sestava"
+        try:
+            wait.until(EC.text_to_be_present_in_element((By.XPATH, "//span[@class='multiselect__single']"), "Rychlá sestava"))
+            break
+        except TimeoutException:
+            continue
+    else:
+        self.log("Rychla Sestava neni mozne vybrat!", level="ERROR")
+        raise Exception("Failed to find 'Rychlá sestava' after 10 attempts")
+    self.log("Rychla Sestava selected successfully!")
+
+
+    # Check the input field value
+    time.sleep(1)  # Allow any JavaScript updates
+
 
     # Navigate to the dropdown based on its label "Množina zařízení"
     # Find the label by text, then navigate to the associated dropdown
     wait = WebDriverWait(driver, 2)
+    '''
     dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
     dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
     dropdown.click()  # Open the dropdown
-    # Wait for the dropdown options to appear and select "Všechny EANy"
-    wait = WebDriverWait(driver, 2)
+    
+    # Find the option that contains the specific string and click it
+    option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.EAN}')]")))
+    option.click()
+    body.click()
+    '''
+    for _ in range(10):
+        dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
+        dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
+        dropdown.click()  # Open the dropdown
 
-    # Click the dropdown to expand it using JavaScript
-    driver.execute_script("arguments[0].click();", dropdown)
+        # Find the option that contains the specific string and click it
+        option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.EAN}')]")))
+        option.click()
+        body.click()
 
-    # Wait for options to be visible
-    option = wait.until(EC.visibility_of_element_located((By.XPATH, "//span[contains(text(), 'Všechny EANy')]")))
+        # Check if the span contains the text in self.ean
+        try:
+            
+            span = WebDriverWait(driver, 1).until(
+                EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]/../..//span[@class='multiselect__single']"))
+            )
+            print(span.text + ' - ' + self.EAN)
+            #wait.until(EC.text_to_be_present_in_element((By.XPATH, span), self.EAN))        
+            #wait.until(EC.text_to_be_present_in_element((By.XPATH, "//span[@class='multiselect__single']"), self.EAN))
+            if f"{self.EAN}" in span.text:
+              break
+        except TimeoutException:
+            continue
+    else:
+        self.log(f"Failed to find '{self.EAN}' after 10 attempts", level="ERROR")
+        raise Exception(f"Failed to find '{self.EAN}' after 10 attempts")
+    self.log(f"Device EAN '{self.EAN}' selected successfully!")
 
     # Navigate to the dropdown based on its label "Období"
     # Use the label text to find the dropdown button
@@ -189,11 +236,15 @@ class pnd(hass.Hass):
     #print(driver.page_source)
     link_text = "07 Profil spotřeby za den (+A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    driver.execute_script("arguments[0].scrollIntoView();", link)
+    time.sleep(3)
     link.click()
-
+    body.click()
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    time.sleep(2)
     toggle_button.click()
 
     # Wait for the CSV link and click it
@@ -217,11 +268,15 @@ class pnd(hass.Hass):
     #print(driver.page_source)
     link_text = "08 Profil výroby za den (-A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    driver.execute_script("arguments[0].scrollIntoView();", link)
+    time.sleep(3)
     link.click()
-
+    body.click()
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    time.sleep(2)
     toggle_button.click()
 
     # Wait for the CSV link and click it
@@ -318,11 +373,16 @@ class pnd(hass.Hass):
 
     # Find and click the link by its exact text
     #print(driver.page_source)
+    self.log("Selecting 07 Profil spotřeby za den (+A)")
     link_text = "07 Profil spotřeby za den (+A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    driver.execute_script("arguments[0].scrollIntoView();", link)
+    time.sleep(3)
     link.click()
+    body.click()
 
     # Wait for the dropdown toggle and click it using the button text
+    self.log("Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
     toggle_button.click()
@@ -348,11 +408,16 @@ class pnd(hass.Hass):
 
     # Find and click the link by its exact text
     #print(driver.page_source)
+    self.log("Selecting 08 Profil výroby za den (-A)")
     link_text = "08 Profil výroby za den (-A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    driver.execute_script("arguments[0].scrollIntoView();", link)
+    time.sleep(3)
     link.click()
+    body.click()
 
     # Wait for the dropdown toggle and click it using the button text
+    self.log("Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
     toggle_button.click()
@@ -396,6 +461,12 @@ class pnd(hass.Hass):
       "device_class": "energy",
       "unit_of_measurement": "kWh"
     })
+    comparison = min(round(float(total_production) / float(total_consumption) * 100, 2), 100)
+    self.set_state("sensor.pnd_production2consumption", state=comparison,attributes={
+      "friendly_name": "PND Interval Production to Consumption",
+      "device_class": "energy",
+      "unit_of_measurement": "%"
+    })
     #----------------------------------------------
     self.log("All Done - INTERVAL DATA PROCESSED")
 
@@ -405,4 +476,3 @@ class pnd(hass.Hass):
     self.log("All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
     self.log("Sensor State Set to OFF")
-
