@@ -163,6 +163,8 @@ mode: single
 ```
 
 ### Řešení problémů se skriptem
+Nejprve zkuste spustit znovu, skript simuluje pohyb na webové stránce a není garantováno, že stránka bude vždy stejná a skript doběhne úspěšně dokonce.
+
 Pokud se vyskytne problém (např data se nestahují):
 * V doplňku AppDaemon je záložka log, zobrazí kde přesně skript selhal
 * Přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon. Pak je dostupný log v cestě /homeassistant/appdaemon/pnd.log
