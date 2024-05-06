@@ -385,7 +385,7 @@ class pnd(hass.Hass):
     link_text = "07 Profil spotřeby za den (+A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     driver.execute_script("arguments[0].scrollIntoView();", link)
-    time.sleep(3)
+    time.sleep(1)
     link.click()
     body.click()
 
@@ -393,6 +393,8 @@ class pnd(hass.Hass):
     self.log("Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    time.sleep(1)    
     toggle_button.click()
 
     # Wait for the CSV link and click it
@@ -420,7 +422,7 @@ class pnd(hass.Hass):
     link_text = "08 Profil výroby za den (-A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     driver.execute_script("arguments[0].scrollIntoView();", link)
-    time.sleep(3)
+    time.sleep(1)
     link.click()
     body.click()
 
