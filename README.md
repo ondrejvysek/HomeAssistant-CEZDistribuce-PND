@@ -232,6 +232,19 @@ title: Celkový přehled
 ```
 ![](/obrazky/pnd-celkem-nahled.png)
 
+### Stav využití Virtuální Baterie
+Jedná se o poměr mezi výrobou a spotřebou, maximální hodnota je 100 (tj pokud je výroba větší nežli spotřeba, bude hodnota 100%). Využívá standardní kartu Home Assistanta
+
+```
+type: gauge
+entity: sensor.pnd_production2consumption
+name: Využití Virtuální Baterie
+min: 0
+max: 100
+needle: false
+```
+![](/obrazky/pnd-pomer.png)
+
 ### Přehled celkové výroby / spotřeby v koláčovém grafu
 Jsou využita data ze senzorů _sensor.pnd_total_interval_consumption_ resp _sensor.pnd_total_interval_production_
 ```
