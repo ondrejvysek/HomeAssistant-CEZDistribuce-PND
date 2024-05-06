@@ -20,6 +20,7 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
    - [AddOn AppDaemon](#appdaemon)
    - AddOn File Editor (nebo jakoukoliv možnost úpravy konfiguračních souborů v HA)
    - Script pro stažení dat
+   - [Řešení problémů](#%C5%99e%C5%A1en%C3%AD-probl%C3%A9m%C5%AF-se-skriptem)
    - [Naplánování automatické aktualizace](#nastavení-automatické-aktualizace-dat)
    - [HACS](#instalace-hacs)
    - [ApexCharts Card](#instalace-apexcharts-card)
@@ -128,6 +129,10 @@ pnd:
 7. do složky _apps_ nahrajte soubor [pnd.py](/pnd.py)
 8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
 
+Při úspěšném chodu skriptu:
+* jsou vytvořeny 4 soubory ve složce /homeassistant/appdaemon/apps/pnd
+* je vypnut binární senzor pnd_running (pokud není tento senzor vypnut po cca 2 minutách, přejděte na [řešení problémů](#%C5%99e%C5%A1en%C3%AD-probl%C3%A9m%C5%AF-se-skriptem)
+
 ### Nastavení automatické aktualizace dat
 Skript, který získává data vyčkává na událost _run_pnd_ v rámci Home Assistant. Nejsnazší cestou je vytvoření automatizace, která v pravidelném čase stažení dat spustí.
 1. V Home Assistant zvolit "Nastavení" > "Automatizace a scény"
@@ -155,7 +160,11 @@ mode: single
 ```
 
 ### Řešení problémů se skriptem
-pokud se vyskytne problém (např data se nestahují), přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon. Pak je dostupný log v cestě /homeassistant/appdaemon/pnd.log
+Pokud se vyskytne problém (např data se nestahují):
+* V doplňku AppDaemon je záložka log, zobrazí kde přesně skript selhal
+* Přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon. Pak je dostupný log v cestě /homeassistant/appdaemon/pnd.log
+
+Obě tyto informace z posledního běhu přiložte k problému zde na GitHubu
 
 ### Instalace HACS
 Postup instalalce je uvedený na [stránkách projektu](https://hacs.xyz/)
@@ -368,6 +377,7 @@ series:
 ![](/obrazky/pnd-vsechnadata-mesicni.png)
 
 # Plány a nápady
+Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde na GitHubu
 - [ ] Zpracování více EANů (Elektroměrů)
 - [ ] Skript nepracuje správně, pokud uživatel zvolil uživatelskou sestavu. Pro správné fungování prozatím zvolte ručně "Rychlá sestava" a portál zavřete, script bude fungovat správně. na řešení pracuji
 # Změny
