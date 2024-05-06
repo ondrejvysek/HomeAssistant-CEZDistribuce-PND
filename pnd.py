@@ -125,7 +125,7 @@ class pnd(hass.Hass):
     body = driver.find_element(By.TAG_NAME, 'body')
     # Wait for the button to be clickable
     wait = WebDriverWait(driver, 10)  # 10-second timeout
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
+    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
 
     # Click the button
     tabulka_dat_button.click()
@@ -365,12 +365,12 @@ class pnd(hass.Hass):
     #button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
     #driver.execute_script("arguments[0].scrollIntoView();", link)
     #button.click()
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
+    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
     # Click the button
     tabulka_dat_button.click()    
     time.sleep(3)
     #button.click()
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
+    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
     # Click the button
     tabulka_dat_button.click()    
 
@@ -428,6 +428,8 @@ class pnd(hass.Hass):
     self.log("Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+
     toggle_button.click()
 
     # Wait for the CSV link and click it
@@ -484,3 +486,4 @@ class pnd(hass.Hass):
     self.log("All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
     self.log("Sensor State Set to OFF")
+
