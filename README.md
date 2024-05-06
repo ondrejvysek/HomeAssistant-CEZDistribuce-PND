@@ -115,7 +115,7 @@ logs:
    * parametr **PNDUserName** je váš email s přihlášením do portálu
    * parametr **PNDUserPassword** je heslo pro přihláše
    * parametr **DataInterval** je interval dat, které budete chtít stahovat - například období fixace smlouvy. Nedoporučuji víc jak rok, mohlo by zahltit databázi.
-   * parametr **EAN** je číslo (pouze číslo) vašeho elektroměru, který chcete sledovat v HA. zjistíte jej v Portále
+   * parametr **EAN** je číslo (pouze číslo, nikoliv ELM 3000000000) vašeho elektroměru, který chcete sledovat v HA. zjistíte jej v Portále
 ```
 ---
 pnd:
