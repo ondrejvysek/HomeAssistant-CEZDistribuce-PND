@@ -364,9 +364,11 @@ class pnd(hass.Hass):
 
     wait = WebDriverWait(driver, 10)
     button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
+    driver.execute_script("arguments[0].scrollIntoView();", link)
+    time.sleep(3)
     button.click()
 
-    time.sleep(5)
+    
 
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
@@ -476,3 +478,4 @@ class pnd(hass.Hass):
     self.log("All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
     self.log("Sensor State Set to OFF")
+
