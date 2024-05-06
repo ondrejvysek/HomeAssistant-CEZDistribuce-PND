@@ -400,7 +400,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Uživatelské sestavy, které by obsahovaly VT/NT,...??
       
 # Změny
-0.9.3: 6.5.2024
+6.5.2024 - 0.9.3
 - [x] Přidán sensor.pnd_production2consumption jako procentuální poměr mezi výrobou a spotřebou (např. využití Virtuální Baterie)
 - [x] Aktualizovaná karta celkového přehledu o sensor.pnd_production2consumption
 - [x] Přidán parametr EAN do konfigurace
@@ -408,6 +408,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [x] Lepší ošetření chybových stavů a rozložení Portálu
 - [ ] upřesnění dílčích částí návodu
       
-0.9.2: 5.4.2024
+5.5.2024 - 0.9.2
 - [x] Změna vyhledání intervalu z ID na nadřazený název
 - [x] Vynucení "Výchozí sestava" a "Všechny EANy"
+- [x] Vytvořen changelog
