@@ -24,6 +24,8 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
    - [HACS](#instalace-hacs)
    - [ApexCharts Card](#instalace-apexcharts-card)
 3. [Tvorba Dashboardu](#tvorba-dashboardu)
+4. [Nápady a plány](#pl%C3%A1ny-a-n%C3%A1pady)
+5. [Změny (Changelog)](#změny)
 
 
 ## Distribuční portál
@@ -369,6 +371,6 @@ series:
 - [ ] Zpracování více EANů (Elektroměrů)
 - [ ] Skript nepracuje správně, pokud uživatel zvolil uživatelskou sestavu. Pro správné fungování prozatím zvolte ručně "Rychlá sestava" a portál zavřete, script bude fungovat správně. na řešení pracuji
 # Změny
-5.4.2024
+0.9.2: 5.4.2024
 - [x] Změna vyhledání intervalu z ID na nadřazený název
 - [x] Vynucení "Výchozí sestava" a "Všechny EANy"
