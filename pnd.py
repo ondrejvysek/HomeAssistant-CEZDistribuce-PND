@@ -357,18 +357,17 @@ class pnd(hass.Hass):
 
     # Optionally, you can send ENTER or TAB if needed to process the input
     input_field.send_keys(Keys.TAB)  # or Keys.TAB if you need to move out of the input field
-    input_field.send_keys(Keys.TAB)
+    body.click()
     # Confirmation output (optional)
     self.log(f"Data Interval Entered - '{self.datainterval}'")
-    #body.click()
-    #driver.execute_script("window.scrollTo(0, 0);")
     #-----------------------------------------------
+    time.sleep(3)
+    wait = WebDriverWait(driver, 10)
+    button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
+    driver.execute_script("arguments[0].scrollIntoView();", link)
+    time.sleep(3)
+    button.click()
 
-    #wait = WebDriverWait(driver, 10)
-    #button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
-    #time.sleep(3)
-    #button.click()
-    input_field.send_keys(Keys.ENTER)
     
 
     # Wait for the page and elements to fully load
