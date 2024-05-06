@@ -360,11 +360,12 @@ class pnd(hass.Hass):
 
     # Confirmation output (optional)
     self.log(f"Data Interval Entered - '{self.datainterval}'")
+    body.click()
+    driver.execute_script("window.scrollTo(0, 0);")
     #-----------------------------------------------
 
     wait = WebDriverWait(driver, 10)
     button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
-    driver.execute_script("arguments[0].scrollIntoView();", link)
     time.sleep(3)
     button.click()
 
@@ -478,4 +479,3 @@ class pnd(hass.Hass):
     self.log("All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
     self.log("Sensor State Set to OFF")
-
