@@ -407,6 +407,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [x] Přidán výběr EAN a Rychlá sestava pro případ, kdy si nastavení portálu pamatuje předchozí hodnoty EAN a uživatelské sestavy
 - [x] Lepší ošetření chybových stavů a rozložení Portálu
 - [ ] upřesnění dílčích částí návodu
+      
 0.9.2: 5.4.2024
 - [x] Změna vyhledání intervalu z ID na nadřazený název
 - [x] Vynucení "Výchozí sestava" a "Všechny EANy"
