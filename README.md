@@ -406,7 +406,8 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [x] Přidán parametr EAN do konfigurace
 - [x] Přidán výběr EAN a Rychlá sestava pro případ, kdy si nastavení portálu pamatuje předchozí hodnoty EAN a uživatelské sestavy
 - [x] Lepší ošetření chybových stavů a rozložení Portálu
-- [ ] upřesnění dílčích částí návodu
+- [x] Změna způsobu exportu dat z portálu z tabulky
+- [x] upřesnění dílčích částí návodu
       
 5.5.2024 - 0.9.2
 - [x] Změna vyhledání intervalu z ID na nadřazený název
