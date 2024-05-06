@@ -360,8 +360,8 @@ class pnd(hass.Hass):
     input_field.send_keys(Keys.TAB)
     # Confirmation output (optional)
     self.log(f"Data Interval Entered - '{self.datainterval}'")
-    body.click()
-    driver.execute_script("window.scrollTo(0, 0);")
+    #body.click()
+    #driver.execute_script("window.scrollTo(0, 0);")
     #-----------------------------------------------
 
     #wait = WebDriverWait(driver, 10)
