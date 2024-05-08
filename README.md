@@ -403,6 +403,7 @@ series:
 Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde na GitHubu
 - [ ] Zpracování více EANů (Elektroměrů)
 - [ ] Uživatelské sestavy, které by obsahovaly VT/NT,...??
+- [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
       
 # Změny
 8.5.2024 - 0.9.4
