@@ -1,4 +1,4 @@
-ver = "0.9.3"
+ver = "0.9.4"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -14,12 +14,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
 
 def wait_for_download(directory, timeout=30):
-    """
-    Wait for the first (newest) file to appear in the directory within the timeout period.
-    Returns the path to the new file.
-    """
     seconds = 0
     dl_wait = True
     while dl_wait and seconds < timeout:
@@ -33,28 +30,36 @@ def wait_for_download(directory, timeout=30):
     if files:
         return files[-1]
     return None
+class Colors:
+    RED = '\033[31m'   # Red text
+    GREEN = '\033[32m' # Green text
+    YELLOW = '\033[33m' # Yellow text
+    BLUE = '\033[34m'  # Blue text
+    MAGENTA = '\033[35m' # Magenta text
+    CYAN = '\033[36m'  # Cyan text
+    RESET = '\033[0m'  # Reset to default color
 
 class pnd(hass.Hass):
   def initialize(self):
-    self.log(">>>>>>>>>>>> PND Initialize")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": >>>>>>>>>>>> PND Initialize")
     
     self.username = self.args["PNDUserName"] 
     self.password = self.args["PNDUserPassword"]
     self.download_folder = self.args["DownloadFolder"]
     self.datainterval = self.args["DataInterval"]
-    self.EAN = self.args["EAN"]
+    self.ELM = self.args["ELM"]
     self.entity_id_consumption = 'sensor.pnd_consumption'
     self.entity_id_production = 'sensor.pnd_production'
     self.listen_event(self.run_pnd, "run_pnd")
 
   def terminate(self):
-    self.log(">>>>>>>>>>>> PND Terminate")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": >>>>>>>>>>>> PND Terminate")
 
   def run_pnd(self, event_name, data, kwargs):
-    self.log(">>>>>>>>>>>> PND Run Event")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting " +  ver + f" *********************{Colors.RESET}")
     self.set_state("binary_sensor.pnd_running", state="on")
-    self.log("----------------------------------------------")
-    self.log("Hello from AppDaemon for Portal Namerenych Dat")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": ----------------------------------------------")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Hello from AppDaemon for Portal Namerenych Dat")
     
     os.makedirs(self.download_folder, exist_ok=True)
     chrome_options = Options()
@@ -74,16 +79,17 @@ class pnd(hass.Hass):
     #load driver
     try:
       driver = webdriver.Chrome(service=service, options=chrome_options)
-      self.log("Driver Loaded")
+      print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Driver Loaded")
     except:
       self.error("Unable to initialize Chrome Driver - exitting")
       sys.exit()
     # Open a website
+    driver.set_window_size(1920, 1080)
     try:
       driver.get("https://dip.cezdistribuce.cz/irj/portal/?zpnd=")  # Change to the website's login page
-      self.log("Website Opened")
+      print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Website Opened")
     except:
-      self.error("Unable to open website - exitting")
+      print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to open website - exitting{Colors.RESET}")
       sys.exit()
     time.sleep(3)  # Allow time for the page to load
     # Locate the element that might be blocking the login button
@@ -118,9 +124,9 @@ class pnd(hass.Hass):
 
     # Print whether the H1 tag with the specified text is found
     if h1_element:
-        self.log(f"H1 tag with text '{h1_text}' is present.")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"H1 tag with text '{h1_text}' is present.")
     else:
-        self.error(f"H1 tag with text '{h1_text}' is not found.", level="ERROR")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: H1 tag with text '{h1_text}' is not found.{Colors.RESET}")
         sys.exit()
     body = driver.find_element(By.TAG_NAME, 'body')
     # Wait for the button to be clickable
@@ -151,9 +157,9 @@ class pnd(hass.Hass):
         except TimeoutException:
             continue
     else:
-        self.log("Rychla Sestava neni mozne vybrat!", level="ERROR")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Rychla Sestava neni mozne vybrat!{Colors.RESET}")
         raise Exception("Failed to find 'Rychlá sestava' after 10 attempts")
-    self.log("Rychla Sestava selected successfully!")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Rychla Sestava selected successfully!")
 
 
     # Check the input field value
@@ -163,43 +169,34 @@ class pnd(hass.Hass):
     # Navigate to the dropdown based on its label "Množina zařízení"
     # Find the label by text, then navigate to the associated dropdown
     wait = WebDriverWait(driver, 2)
-    '''
-    dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
-    dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
-    dropdown.click()  # Open the dropdown
-    
-    # Find the option that contains the specific string and click it
-    option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.EAN}')]")))
-    option.click()
-    body.click()
-    '''
+
     for _ in range(10):
         dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
         dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
         dropdown.click()  # Open the dropdown
 
         # Find the option that contains the specific string and click it
-        option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.EAN}')]")))
+        option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.ELM}')]")))
         option.click()
         body.click()
 
-        # Check if the span contains the text in self.ean
+        # Check if the span contains the text in self.ELM
         try:
             
             span = WebDriverWait(driver, 1).until(
                 EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]/../..//span[@class='multiselect__single']"))
             )
-            print(span.text + ' - ' + self.EAN)
-            #wait.until(EC.text_to_be_present_in_element((By.XPATH, span), self.EAN))        
-            #wait.until(EC.text_to_be_present_in_element((By.XPATH, "//span[@class='multiselect__single']"), self.EAN))
-            if f"{self.EAN}" in span.text:
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.CYAN}{span.text} - {self.ELM}{Colors.RESET}")
+            #wait.until(EC.text_to_be_present_in_element((By.XPATH, span), self.ELM))        
+            #wait.until(EC.text_to_be_present_in_element((By.XPATH, "//span[@class='multiselect__single']"), self.ELM))
+            if f"{self.ELM}" in span.text:
               break
         except TimeoutException:
             continue
     else:
-        self.log(f"Failed to find '{self.EAN}' after 10 attempts", level="ERROR")
-        raise Exception(f"Failed to find '{self.EAN}' after 10 attempts")
-    self.log(f"Device EAN '{self.EAN}' selected successfully!")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: Failed to find '{self.ELM}' after 10 attempts{Colors.RESET}")
+        raise Exception(f"Failed to find '{self.ELM}' after 10 attempts")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Device ELM '{self.ELM}' selected successfully!")
 
     # Navigate to the dropdown based on its label "Období"
     # Use the label text to find the dropdown button
@@ -222,13 +219,13 @@ class pnd(hass.Hass):
         # After confirming the presence, wait until it's actually clickable
         button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
         button.click()
-        print("Button clicked successfully!")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Button 'Vyhledat data' clicked successfully!")
     except Exception as e:
-        print("Failed to find or click the button:", str(e))
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Failed to find or click the 'Vyhledat data' button:", str(e))
     
 
     time.sleep(5)
-
+    body.click()
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
 
@@ -237,8 +234,18 @@ class pnd(hass.Hass):
     link_text = "07 Profil spotřeby za den (+A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     driver.execute_script("arguments[0].scrollIntoView();", link)
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+    link.screenshot(self.download_folder+"/daily-07.png")
+    # Navigate to the parent element using XPath
+    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+    # Get the HTML of the parent element
+    parent_html = parent_element.get_attribute('outerHTML')
+    # Print the current date and time along with the link text and parent HTML
+    print("Parent HTML:", parent_html)    
     time.sleep(3)
+    body.screenshot(self.download_folder+"/daily-body-07a.png")
     link.click()
+    body.screenshot(self.download_folder+"/daily-body-07b.png")
     body.click()
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
@@ -249,7 +256,7 @@ class pnd(hass.Hass):
 
     # Wait for the CSV link and click it
     csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
-    self.log(f"Downloading CSV file for {link_text}")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
     csv_link.click()
     # Wait for the download to complete
     downloaded_file = wait_for_download(self.download_folder)
@@ -258,9 +265,9 @@ class pnd(hass.Hass):
         new_filename = os.path.join(self.download_folder, "daily-consumption.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
-        self.log(f"File downloaded and saved as: {new_filename}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename}")
     else:
-        self.error(f"No file was downloaded for {link_text}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
 
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
 
@@ -269,8 +276,18 @@ class pnd(hass.Hass):
     link_text = "08 Profil výroby za den (-A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     driver.execute_script("arguments[0].scrollIntoView();", link)
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+    link.screenshot(self.download_folder+"/daily-07.png")
+    # Navigate to the parent element using XPath
+    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+    # Get the HTML of the parent element
+    parent_html = parent_element.get_attribute('outerHTML')
+    # Print the current date and time along with the link text and parent HTML
+    print("Parent HTML:", parent_html)    
     time.sleep(3)
+    body.screenshot(self.download_folder+"/daily-body-08a.png")
     link.click()
+    body.screenshot(self.download_folder+"/daily-body-08b.png")
     body.click()
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
@@ -281,7 +298,7 @@ class pnd(hass.Hass):
 
     # Wait for the CSV link and click it
     csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
-    self.log(f"Downloading CSV file for {link_text}")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
     csv_link.click()
     # Wait for the download to complete
     downloaded_file = wait_for_download(self.download_folder)
@@ -290,11 +307,11 @@ class pnd(hass.Hass):
         new_filename = os.path.join(self.download_folder, "daily-production.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
-        self.log(f"File downloaded and saved as: {new_filename}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename}")
     else:
-        self.error(f"No file was downloaded for {link_text}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
 
-    self.log("All Done - DAILY DATA DOWNLOADED")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - DAILY DATA DOWNLOADED")
     date_format = "%d.%m.%Y %H:%M"
     data_consumption = pd.read_csv(self.download_folder + '/daily-consumption.csv', delimiter=';', encoding='latin1')
     latest_consumption_entry = data_consumption.iloc[-1]  # Get the last row, assuming the data is appended daily
@@ -314,8 +331,8 @@ class pnd(hass.Hass):
     consumption_value = latest_consumption_entry.iloc[1]
     production_value = latest_production_entry.iloc[1]
 
-    self.log(f"Latest entry: {date_consumption_str} - {yesterday_consumption} - {consumption_value} kWh")
-    self.log(f"Latest entry: {date_production_str} - {yesterday_production} - {production_value} kWh")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Latest entry: {date_consumption_str} - {consumption_value} kWh{Colors.RESET}")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Latest entry: {date_production_str} - {production_value} kWh{Colors.RESET}")
 
     self.set_state(self.entity_id_consumption, state=consumption_value, attributes={
       "friendly_name": "PND Consumption",
@@ -330,7 +347,7 @@ class pnd(hass.Hass):
       "date": yesterday_production.isoformat()
     })
     
-    self.log("All Done - DAILY DATA PROCESSED")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - DAILY DATA PROCESSED")
 
     #------------------INTERVAL-----------------------------
     ## Use the label text to find the dropdown button
@@ -359,21 +376,21 @@ class pnd(hass.Hass):
     input_field.send_keys(Keys.TAB)  # or Keys.TAB if you need to move out of the input field
     body.click()
     # Confirmation output (optional)
-    self.log(f"Data Interval Entered - '{self.datainterval}'")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Data Interval Entered - '{self.datainterval}'")
     #-----------------------------------------------
     time.sleep(3)
     #button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
     #driver.execute_script("arguments[0].scrollIntoView();", link)
     #button.click()
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
+    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
     # Click the button
     tabulka_dat_button.click()    
     time.sleep(3)
     #button.click()
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
+    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
     # Click the button
     tabulka_dat_button.click()    
-
+    body.click()
     
 
     # Wait for the page and elements to fully load
@@ -381,16 +398,33 @@ class pnd(hass.Hass):
 
     # Find and click the link by its exact text
     #print(driver.page_source)
-    self.log("Selecting 07 Profil spotřeby za den (+A)")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Selecting 07 Profil spotřeby za den (+A)")
     link_text = "07 Profil spotřeby za den (+A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    driver.execute_script("arguments[0].scrollIntoView();", link)
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+    link.screenshot(self.download_folder+"/interval-07.png")
+    # Navigate to the parent element using XPath
+    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+    # Get the HTML of the parent element
+    parent_html = parent_element.get_attribute('outerHTML')
+    # Print the current date and time along with the link text and parent HTML
+    print("Parent HTML:", parent_html)
+
+
+
+    #driver.execute_script("arguments[0].scrollIntoView();", link)
+    # Use ActionChains to move to the element
+    actions = ActionChains(driver)
+    actions.move_to_element(link).perform()    
     time.sleep(1)
+    body.screenshot(self.download_folder+"/interval-body-07a.png")
     link.click()
+    body.screenshot(self.download_folder+"/interval-body-07b.png")
     body.click()
+    body.screenshot(self.download_folder+"/interval-body-07c.png")
 
     # Wait for the dropdown toggle and click it using the button text
-    self.log("Exporting data")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
     driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
@@ -409,25 +443,41 @@ class pnd(hass.Hass):
         new_filename = os.path.join(self.download_folder, "range-consumption.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
-        print(f"File downloaded and saved as: {new_filename}")
+        downloaded_file = self.download_folder+"/range-consumption.csv"
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename} {round(os.path.getsize(downloaded_file)/1024,2)} KB")
     else:
-        print("No file was downloaded.")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "No file was downloaded.")
     #----------------------------------------------
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
 
     # Find and click the link by its exact text
     #print(driver.page_source)
-    self.log("Selecting 08 Profil výroby za den (-A)")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Selecting 08 Profil výroby za den (-A)")
     link_text = "08 Profil výroby za den (-A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    driver.execute_script("arguments[0].scrollIntoView();", link)
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+    link.screenshot(self.download_folder+"/interval-08.png")
+    # Navigate to the parent element using XPath
+    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+    # Get the HTML of the parent element
+    parent_html = parent_element.get_attribute('outerHTML')
+    # Print the current date and time along with the link text and parent HTML
+    print("Parent HTML:", parent_html)    
+    #driver.execute_script("arguments[0].scrollIntoView();", link)
+    # Use ActionChains to move to the element
+    actions = ActionChains(driver)
+    actions.move_to_element(link).perform()    
+    
+    body.screenshot(self.download_folder+"/interval-body-08a.png")
     time.sleep(1)
     link.click()
+    body.screenshot(self.download_folder+"/interval-body-08b.png")
     body.click()
+    body.screenshot(self.download_folder+"/interval-body-08c.png")
 
     # Wait for the dropdown toggle and click it using the button text
-    self.log("Exporting data")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
     driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
@@ -446,10 +496,11 @@ class pnd(hass.Hass):
         new_filename = os.path.join(self.download_folder, "range-production.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
-        print(f"File downloaded and saved as: {new_filename}")
+        downloaded_file = self.download_folder+"/range-production.csv"
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename} {round(os.path.getsize(downloaded_file)/1024,2)} KB")
     else:
-        print("No file was downloaded.")
-    self.log("All Done - INTERVAL DATA DOWNLOADED")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +"No file was downloaded.")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - INTERVAL DATA DOWNLOADED")
     data_consumption = pd.read_csv(self.download_folder + '/range-consumption.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
     data_production = pd.read_csv(self.download_folder + '/range-production.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
 
@@ -480,12 +531,11 @@ class pnd(hass.Hass):
       "unit_of_measurement": "%"
     })
     #----------------------------------------------
-    self.log("All Done - INTERVAL DATA PROCESSED")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - INTERVAL DATA PROCESSED")
 
 
     # Close the browser
     driver.quit()
-    self.log("All Done - BROWSER CLOSED")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
-    self.log("Sensor State Set to OFF")
-
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Sensor State Set to OFF")
