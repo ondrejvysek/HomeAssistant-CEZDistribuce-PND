@@ -1,4 +1,4 @@
-ver = "0.9.4.1"
+ver = "0.9.4.2"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -170,14 +170,22 @@ class pnd(hass.Hass):
     # Find the label by text, then navigate to the associated dropdown
     wait = WebDriverWait(driver, 2)
 
-    for _ in range(10):
+    for i in range(10):
         dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
         dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
-        dropdown.click()  # Open the dropdown
 
+        #         dropdown = label.find_element(By.XPATH, "./following-sibling::div//div[@class='multiselect__select']")
+
+        dropdown.click()  # Open the dropdown
+        body.screenshot(self.download_folder+f"/03-{i}-a.png")
         # Find the option that contains the specific string and click it
-        option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.ELM}')]")))
+        #option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.ELM}')]")))
+
+        option = wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[contains(text(), '{self.ELM}')]")))
+
+
         option.click()
+        body.screenshot(self.download_folder+f"/03-{i}-b.png")
         body.click()
 
         # Check if the span contains the text in self.ELM
