@@ -187,7 +187,12 @@ class pnd(hass.Hass):
         option.click()
         body.screenshot(self.download_folder+f"/03-{i}-b.png")
         body.click()
-
+        button = driver.find_element(By.XPATH, "//button[contains(., 'Vyhledat data')]")
+        btn_attr = button.get_attribute('disabled')
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" Vyhledat Button {btn_attr}")
+        if btn_attr == "true":
+           break
+        '''
         # Check if the span contains the text in self.ELM
         try:
             
@@ -201,6 +206,7 @@ class pnd(hass.Hass):
               break
         except TimeoutException:
             continue
+        '''
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: Failed to find '{self.ELM}' after 10 attempts{Colors.RESET}")
         raise Exception(f"Failed to find '{self.ELM}' after 10 attempts")
