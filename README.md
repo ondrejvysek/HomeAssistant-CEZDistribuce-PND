@@ -115,8 +115,10 @@ logs:
    * parametr **PNDUserName** je váš email s přihlášením do portálu
    * parametr **PNDUserPassword** je heslo pro přihláše
    * parametr **DataInterval** je interval dat, které budete chtít stahovat - například období fixace smlouvy. Nedoporučuji víc jak rok, mohlo by zahltit databázi.
-   * parametr **EAN** je číslo (pouze číslo, nikoliv ELM 3000000000) vašeho elektroměru, který chcete sledovat v HA. zjistíte jej v Portále
+   * parametr **ELM** je číslo (pouze číslo, nikoliv ELM 3000000000) vašeho elektroměru, který chcete sledovat v HA. zjistíte jej v Portále - viz obrázek níže
+     
 ```
+![](/obrazky/pnd-cislo-elektromeru.png)
 ---
 pnd:
   module: pnd
@@ -125,7 +127,7 @@ pnd:
   PNDUserName: "vas email s prihlasenim do portalu distribuce"
   PNDUserPassword: "vase heslo do portalu distribuce"
   DataInterval: "27.10.2023 00:00 - 27.10.2024 00:00"
-  EAN: "3000012345"
+  ELM: "3000012345"
   DownloadFolder: "/homeassistant/appdaemon/apps/pnd"
 ```
 6. soubor uložte
