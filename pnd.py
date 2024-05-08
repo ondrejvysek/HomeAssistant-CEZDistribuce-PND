@@ -1,4 +1,4 @@
-ver = "0.9.4.2"
+ver = "0.9.4.1"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -116,7 +116,7 @@ class pnd(hass.Hass):
     time.sleep(3)  # Adjust as needed
 
     wait = WebDriverWait(driver, 20)  # 10-second timeout
-
+    body = driver.find_element(By.TAG_NAME, 'body')
     #portal_title = wait.until(EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Naměřená data')]"))).text
     # Check if the specified H1 tag is present
     h1_text = "Naměřená data"
@@ -128,7 +128,7 @@ class pnd(hass.Hass):
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: H1 tag with text '{h1_text}' is not found.{Colors.RESET}")
         sys.exit()
-    body = driver.find_element(By.TAG_NAME, 'body')
+    
     # Wait for the button to be clickable
     wait = WebDriverWait(driver, 10)  # 10-second timeout
     tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
