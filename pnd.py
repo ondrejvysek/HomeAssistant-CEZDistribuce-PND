@@ -1,4 +1,4 @@
-ver = "0.9.4.1"
+ver = "0.9.4.2"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -121,7 +121,7 @@ class pnd(hass.Hass):
     # Check if the specified H1 tag is present
     h1_text = "Naměřená data"
     h1_element = wait.until(EC.presence_of_element_located((By.XPATH, f"//h1[contains(text(), '{h1_text}')]")))
-
+    body.screenshot(self.download_folder+"/01.png")
     # Print whether the H1 tag with the specified text is found
     if h1_element:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"H1 tag with text '{h1_text}' is present.")
@@ -135,7 +135,7 @@ class pnd(hass.Hass):
 
     # Click the button
     tabulka_dat_button.click()
-
+    body.screenshot(self.download_folder+"/02.png")
     # Navigate to the dropdown based on its label "Sestava"
     # Find the label by text, then navigate to the associated dropdown
     wait = WebDriverWait(driver, 2)  # Adjust timeout as necessary
@@ -160,7 +160,7 @@ class pnd(hass.Hass):
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Rychla Sestava neni mozne vybrat!{Colors.RESET}")
         raise Exception("Failed to find 'Rychlá sestava' after 10 attempts")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Rychla Sestava selected successfully!")
-
+    body.screenshot(self.download_folder+"/03.png")
 
     # Check the input field value
     time.sleep(1)  # Allow any JavaScript updates
@@ -197,7 +197,7 @@ class pnd(hass.Hass):
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: Failed to find '{self.ELM}' after 10 attempts{Colors.RESET}")
         raise Exception(f"Failed to find '{self.ELM}' after 10 attempts")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Device ELM '{self.ELM}' selected successfully!")
-
+    body.screenshot(self.download_folder+"/04.png")
     # Navigate to the dropdown based on its label "Období"
     # Use the label text to find the dropdown button
     wait = WebDriverWait(driver, 2)
@@ -209,7 +209,7 @@ class pnd(hass.Hass):
     wait = WebDriverWait(driver, 2)
     option_vcera = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Včera') and contains(@class, 'multiselect__option')]")))
     option_vcera.click()
-
+    body.screenshot(self.download_folder+"/05.png")
     # Locate the input field "Vyhledat data" and click it
     
     # Check for the presence of the button and then check if it's clickable
@@ -223,19 +223,19 @@ class pnd(hass.Hass):
     except Exception as e:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Failed to find or click the 'Vyhledat data' button:", str(e))
     
-
+    body.screenshot(self.download_folder+"/06.png")
     time.sleep(5)
     body.click()
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
-
+    body.screenshot(self.download_folder+"/07.png")
     # Find and click the link by its exact text
     #print(driver.page_source)
     link_text = "07 Profil spotřeby za den (+A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     driver.execute_script("arguments[0].scrollIntoView();", link)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
-    link.screenshot(self.download_folder+"/daily-07.png")
+    
     # Navigate to the parent element using XPath
     parent_element = driver.execute_script("return arguments[0].parentNode;", link)
     # Get the HTML of the parent element
@@ -247,6 +247,7 @@ class pnd(hass.Hass):
     link.click()
     body.screenshot(self.download_folder+"/daily-body-07b.png")
     body.click()
+    body.screenshot(self.download_folder+"/daily-body-07c.png")
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
@@ -273,11 +274,12 @@ class pnd(hass.Hass):
 
     # Find and click the link by its exact text
     #print(driver.page_source)
+    body.screenshot(self.download_folder+"/08.png")
     link_text = "08 Profil výroby za den (-A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     driver.execute_script("arguments[0].scrollIntoView();", link)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
-    link.screenshot(self.download_folder+"/daily-07.png")
+    
     # Navigate to the parent element using XPath
     parent_element = driver.execute_script("return arguments[0].parentNode;", link)
     # Get the HTML of the parent element
@@ -289,6 +291,7 @@ class pnd(hass.Hass):
     link.click()
     body.screenshot(self.download_folder+"/daily-body-08b.png")
     body.click()
+    body.screenshot(self.download_folder+"/daily-body-08c.png")
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
@@ -402,7 +405,7 @@ class pnd(hass.Hass):
     link_text = "07 Profil spotřeby za den (+A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
-    link.screenshot(self.download_folder+"/interval-07.png")
+    
     # Navigate to the parent element using XPath
     parent_element = driver.execute_script("return arguments[0].parentNode;", link)
     # Get the HTML of the parent element
@@ -458,7 +461,7 @@ class pnd(hass.Hass):
     link_text = "08 Profil výroby za den (-A)"
     link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
-    link.screenshot(self.download_folder+"/interval-08.png")
+    
     # Navigate to the parent element using XPath
     parent_element = driver.execute_script("return arguments[0].parentNode;", link)
     # Get the HTML of the parent element
