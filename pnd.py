@@ -1,4 +1,4 @@
-ver = "0.9.4"
+ver = "0.9.4.1"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -420,6 +420,7 @@ class pnd(hass.Hass):
     body.screenshot(self.download_folder+"/interval-body-07a.png")
     link.click()
     body.screenshot(self.download_folder+"/interval-body-07b.png")
+    time.sleep(1)
     body.click()
     body.screenshot(self.download_folder+"/interval-body-07c.png")
 
@@ -473,6 +474,7 @@ class pnd(hass.Hass):
     time.sleep(1)
     link.click()
     body.screenshot(self.download_folder+"/interval-body-08b.png")
+    time.sleep(1)
     body.click()
     body.screenshot(self.download_folder+"/interval-body-08c.png")
 
