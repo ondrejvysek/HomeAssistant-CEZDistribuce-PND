@@ -1,4 +1,4 @@
-ver = "0.9.4.5"
+ver = "0.9.4.6"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -18,6 +18,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
+from bs4 import BeautifulSoup
 
 def wait_for_download(directory, timeout=30):
     seconds = 0
@@ -201,6 +202,20 @@ class pnd(hass.Hass):
     # Check the input field value
     time.sleep(1)  # Allow any JavaScript updates
 
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": Selecting ELM '{self.ELM}'")
+
+
+    soup = BeautifulSoup(driver.page_source, 'html.parser')
+    dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
+    parent_element = dropdown_label.find_element(By.XPATH, ".//ancestor::div[contains(@class, 'form-group')]")
+    text = parent_element.get_attribute('outerHTML')
+    elm_spans = soup.find_all('span', class_='multiselect__option', text=lambda text: text and text.startswith('ELM'))
+    elm_values = [span.text for span in elm_spans]
+    elm_values_string = ", ".join(elm_values)
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": Valid ELM numbers '{elm_values_string}'")
+
+
+
 
     # Navigate to the dropdown based on its label "Množina zařízení"
     # Find the label by text, then navigate to the associated dropdown
@@ -213,11 +228,16 @@ class pnd(hass.Hass):
     with open(self.download_folder+'/debug-ELM.txt', 'a') as file:
         file.write(parent_element.get_attribute('outerHTML')+ "\n")     
     dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
+
     for i in range(10):
         dropdown.click()  # Open the dropdown
         time.sleep(1)
         body.screenshot(self.download_folder+f"/03-{i}-a.png")
-        option = wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[contains(text(), '{self.ELM}')]")))
+        try:
+            option = wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[contains(text(), '{self.ELM}')]")))
+        except:
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find '{self.ELM}' in the selection - check ELM attribute in the apps.yaml{Colors.RESET}")
+            raise Exception(f"Failed to find '{self.ELM}' in the selection")
         option.click()
         body.screenshot(self.download_folder+f"/03-{i}-b.png")
         body.click()
@@ -297,7 +317,7 @@ class pnd(hass.Hass):
     # Get the HTML of the parent element
     parent_html = parent_element.get_attribute('outerHTML')
     # Print the current date and time along with the link text and parent HTML
-    print("Parent HTML:", parent_html)    
+    #print("Parent HTML:", parent_html)    
     time.sleep(3)
     body.screenshot(self.download_folder+"/daily-body-07a.png")
     link.click()
@@ -344,7 +364,7 @@ class pnd(hass.Hass):
     # Get the HTML of the parent element
     parent_html = parent_element.get_attribute('outerHTML')
     # Print the current date and time along with the link text and parent HTML
-    print("Parent HTML:", parent_html)    
+    #print("Parent HTML:", parent_html)    
     time.sleep(3)
     body.screenshot(self.download_folder+"/daily-body-08a.png")
     link.click()
@@ -473,7 +493,7 @@ class pnd(hass.Hass):
     # Get the HTML of the parent element
     parent_html = parent_element.get_attribute('outerHTML')
     # Print the current date and time along with the link text and parent HTML
-    print("Parent HTML:", parent_html)
+    #print("Parent HTML:", parent_html)
 
 
 
@@ -532,7 +552,7 @@ class pnd(hass.Hass):
     # Get the HTML of the parent element
     parent_html = parent_element.get_attribute('outerHTML')
     # Print the current date and time along with the link text and parent HTML
-    print("Parent HTML:", parent_html)    
+    #print("Parent HTML:", parent_html)    
     #driver.execute_script("arguments[0].scrollIntoView();", link)
     # Use ActionChains to move to the element
     actions = ActionChains(driver)
