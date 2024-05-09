@@ -408,6 +408,8 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
       
 # Změny
+9.5.2024 - 0.9.4.5
+- [x] Oprava chyby #7 - přidána podpora více oken v PND
 9.5.2024 - 0.9.4.4
 - [x] Kompletní přepracování způsobu a kontroly výběru ELM
 - [x] Vylepšené logování, po dokončení skriptu (pokud neskončí chybou) vytvořený debug.log - prosím zasílejte tento soubor při řešení nesouladu dat
