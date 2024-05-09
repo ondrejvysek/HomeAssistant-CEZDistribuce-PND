@@ -166,13 +166,15 @@ mode: single
 ```
 
 ### Řešení problémů se skriptem
-Nejprve zkuste spustit znovu, skript simuluje pohyb na webové stránce a není garantováno, že stránka bude vždy stejná a skript doběhne úspěšně dokonce.
+Nejprve zkuste spustit znovu, skript simuluje pohyb na webové stránce a není garantováno, že stránka bude vždy stejná a skript doběhne úspěšně dokonce, případně restartujte AppDaemon a spusťe skript znovu.
 
 Pokud se vyskytne problém (např data se nestahují):
-* V doplňku AppDaemon je záložka log, zobrazí kde přesně skript selhal
-* Přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon. Pak je dostupný log v cestě /homeassistant/appdaemon/pnd.log
+* Přepněte nastavení "Log Level" v AppDaemon na Info a restartujte AppDaemon.
+* V doplňku AppDaemon je záložka log, zobrazí kde přesně skript selhal (skript končí chybou) - **přidejte tento log do problému zde na GITu nebo v osobní komunikaci (na FB posílejte otisk obrazovky)**
+* Po doběhnutí skriptu (pokud neskončí chybou) je vytvořený soubor /homeassistant/appdaemon/apps/pnd/debug.zip. Obsahuje složku pnd. Soubor neobsahuje žádná osobní či přihlašovací data - **při řešení problémů připojte tento soubor.**
 
-Obě tyto informace z posledního běhu přiložte k problému zde na GitHubu
+#### Časté problémy
+* Postupoval jsem dle návodu, ale entity se neobjevily: Řešení - vytvořili jste automatizaci pro vyvolání události? Pokud ještě neuplynul čas do spuštění, spusťe automatizaci ručně
 
 ### Instalace HACS
 Postup instalalce je uvedený na [stránkách projektu](https://hacs.xyz/)
@@ -406,6 +408,9 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
       
 # Změny
+9.5.2024 - 0.9.4.4
+- [x] Kompletní přepracování způsobu a kontroly výběru ELM
+- [x] Vylepšené logování, po dokončení skriptu (pokud neskončí chybou) vytvořený debug.log - prosím zasílejte tento soubor při řešení nesouladu dat
 8.5.2024 - 0.9.4
 - [x] Změna označení elektromůru z EAN na ELM v konfiguračním souboru + aktualizace dokumentace
 - [x] Změna logování scriptu, detailní běh není ukládán do pnd.log ale přímo do AppDaemon logu - při řešení problémů prosím o zaslání Doplňky > AppDaemon > Log
