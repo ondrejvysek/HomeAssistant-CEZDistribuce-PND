@@ -57,7 +57,7 @@ AppDaemon je volně spojené, vícevláknové, sandboxované prostředí pro spo
 2. Vyhledejte AppDaemon, zvolte jej a klikněte na "Nainstalovat". Instalace dle rychlosti vašeho HW a internetu je hotova do několika minut.
 3. Po instalaci přejděte do nastavení AppDaemon
    - v části "System Packages" přidejte _chromium-chromedriver_ a _chromium_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
-   - v části "Python packages" přidejte _selenium_ a _pandas_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+   - v části "Python packages" přidejte _selenium_, _pandas_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
    - Klikněte na "Uložit". Konfigurace by měla odpovídat obrázku níže
 4. Spusťte doplněk AppDaemon
   
@@ -408,6 +408,9 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
       
 # Změny
+9.5.2024 - 0.9.4.6
+- [x] Přidána kontrola dostupných ELM
+- [x] Doplněna závislost na modulu bs4 - viz [nastavení doplňku AppDaemon](#instalace-a-nastaven%C3%AD-appdaemon)
 9.5.2024 - 0.9.4.5
 - [x] Oprava chyby #7 - přidána podpora více oken v PND
 9.5.2024 - 0.9.4.4
