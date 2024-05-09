@@ -1,10 +1,13 @@
-ver = "0.9.4.2"
+ver = "0.9.4.4"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
 import os
 import sys
+import shutil
 import pandas as pd
+import zipfile
+import shutil
 from datetime import datetime as dt
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -30,6 +33,19 @@ def wait_for_download(directory, timeout=30):
     if files:
         return files[-1]
     return None
+
+def delete_folder_contents(folder_path):
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        try:
+            if os.path.isfile(file_path) or os.path.islink(file_path):
+                os.unlink(file_path)  # Removes each file.
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)  # Removes directories and their contents recursively.
+        except Exception as e:
+            print(f"Failed to delete {file_path}. Reason: {e}")
+
+
 class Colors:
     RED = '\033[31m'   # Red text
     GREEN = '\033[32m' # Green text
@@ -38,6 +54,19 @@ class Colors:
     MAGENTA = '\033[35m' # Magenta text
     CYAN = '\033[36m'  # Cyan text
     RESET = '\033[0m'  # Reset to default color
+
+def zip_folder(folder_path, output_path):
+    # Create a ZIP file at the specified output path
+    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Walk through the directory
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                # Create the full path to the file
+                file_path = os.path.join(root, file)
+                # Write the file to the zip file
+                # arcname handles the path inside the zip
+                zipf.write(file_path, arcname=os.path.relpath(file_path, start=folder_path))
+
 
 class pnd(hass.Hass):
   def initialize(self):
@@ -60,8 +89,9 @@ class pnd(hass.Hass):
     self.set_state("binary_sensor.pnd_running", state="on")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": ----------------------------------------------")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Hello from AppDaemon for Portal Namerenych Dat")
-    
+    delete_folder_contents(self.download_folder+"/")    
     os.makedirs(self.download_folder, exist_ok=True)
+    #sys.exit()
     chrome_options = Options()
     chrome_options.add_experimental_option("prefs", {
         "download.default_directory": self.download_folder,  # Set download folder
@@ -159,7 +189,7 @@ class pnd(hass.Hass):
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Rychla Sestava neni mozne vybrat!{Colors.RESET}")
         raise Exception("Failed to find 'Rychlá sestava' after 10 attempts")
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Rychla Sestava selected successfully!")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.GREEN}Rychla Sestava selected successfully!{Colors.RESET}")
     body.screenshot(self.download_folder+"/03.png")
 
     # Check the input field value
@@ -168,49 +198,49 @@ class pnd(hass.Hass):
 
     # Navigate to the dropdown based on its label "Množina zařízení"
     # Find the label by text, then navigate to the associated dropdown
+    with open(self.download_folder+'/debug-ELM.txt', 'w') as file:
+        file.write(">>>Debug ELM<<<"+ "\n") 
     wait = WebDriverWait(driver, 2)
-
+    dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
+    parent_element = dropdown_label.find_element(By.XPATH, ".//ancestor::div[contains(@class, 'form-group')]")
+    #print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}{parent_element.get_attribute('outerHTML')}{Colors.RESET}")
+    with open(self.download_folder+'/debug-ELM.txt', 'a') as file:
+        file.write(parent_element.get_attribute('outerHTML')+ "\n")     
+    dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
     for i in range(10):
-        dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
-        dropdown = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")  # Adjusted to the next input field within a sibling div
-
-        #         dropdown = label.find_element(By.XPATH, "./following-sibling::div//div[@class='multiselect__select']")
-
         dropdown.click()  # Open the dropdown
+        time.sleep(1)
         body.screenshot(self.download_folder+f"/03-{i}-a.png")
-        # Find the option that contains the specific string and click it
-        #option = wait.until(EC.visibility_of_element_located((By.XPATH, f"//li[contains(., '{self.ELM}')]")))
-
         option = wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[contains(text(), '{self.ELM}')]")))
-
-
         option.click()
         body.screenshot(self.download_folder+f"/03-{i}-b.png")
         body.click()
         button = driver.find_element(By.XPATH, "//button[contains(., 'Vyhledat data')]")
-        btn_attr = button.get_attribute('disabled')
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" Vyhledat Button {btn_attr}")
-        if btn_attr == "true":
-           break
-        '''
-        # Check if the span contains the text in self.ELM
+        class_attribute = button.get_attribute('class')
         try:
-            
-            span = WebDriverWait(driver, 1).until(
-                EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]/../..//span[@class='multiselect__single']"))
-            )
-            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.CYAN}{span.text} - {self.ELM}{Colors.RESET}")
-            #wait.until(EC.text_to_be_present_in_element((By.XPATH, span), self.ELM))        
-            #wait.until(EC.text_to_be_present_in_element((By.XPATH, "//span[@class='multiselect__single']"), self.ELM))
-            if f"{self.ELM}" in span.text:
-              break
-        except TimeoutException:
-            continue
-        '''
+            span = parent_element.find_element(By.XPATH, ".//span[@class='multiselect__single']").text
+        except:
+            span = ''
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}ELM Status: {span} - {self.ELM}{Colors.RESET}")
+        #if 'disabled' not in class_attribute:
+        parent_element = dropdown_label.find_element(By.XPATH, ".//ancestor::div[contains(@class, 'form-group')]")
+        with open(self.download_folder+'/debug-ELM.txt', 'a') as file:
+            file.write(f">>>Iteration {i}<<<"+ "\n")
+        with open(self.download_folder+'/debug-ELM.txt', 'a') as file:
+            file.write("ELM Span content: " +span+ "\n") 
+        with open(self.download_folder+'/debug-ELM.txt', 'a') as file:
+            file.write(parent_element.get_attribute('outerHTML')+ "\n")                         
+        if 'disabled' not in class_attribute and span.strip() != '':
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Iteration {i}: Vyhledat Button NOT disabled{Colors.RESET}")
+            #print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}{parent_element.get_attribute('outerHTML')}{Colors.RESET}")
+            break
+        else:
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.YELLOW}Iteration {i}: Vyhledat Button IS disabled{Colors.RESET}")
+            #print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}{parent_element.get_attribute('outerHTML')}{Colors.RESET}")            
     else:
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: Failed to find '{self.ELM}' after 10 attempts{Colors.RESET}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Failed to find '{self.ELM}' after 10 attempts{Colors.RESET}")
         raise Exception(f"Failed to find '{self.ELM}' after 10 attempts")
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Device ELM '{self.ELM}' selected successfully!")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Device ELM '{self.ELM}' selected successfully!{Colors.RESET}")
     body.screenshot(self.download_folder+"/04.png")
     # Navigate to the dropdown based on its label "Období"
     # Use the label text to find the dropdown button
@@ -230,16 +260,19 @@ class pnd(hass.Hass):
     try:
         # Use a more specific XPath to ensure the correct button is targeted
         button = wait.until(EC.presence_of_element_located((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
-        # After confirming the presence, wait until it's actually clickable
-        button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
+        #### After confirming the presence, wait until it's actually clickable
+        ###button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
         button.click()
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Button 'Vyhledat data' clicked successfully!")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Button 'Vyhledat data' clicked successfully!{Colors.RESET}")
     except Exception as e:
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Failed to find or click the 'Vyhledat data' button:", str(e))
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}Failed to find or click the 'Vyhledat data' button:{Colors.RESET}", str(e))
     
     body.screenshot(self.download_folder+"/06.png")
     time.sleep(5)
     body.click()
+
+    #raise Exception("---STOP---")
+
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
     body.screenshot(self.download_folder+"/07.png")
@@ -280,9 +313,9 @@ class pnd(hass.Hass):
         new_filename = os.path.join(self.download_folder, "daily-consumption.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}File downloaded and saved as: {new_filename}{Colors.RESET}")
     else:
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
 
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
 
@@ -324,9 +357,9 @@ class pnd(hass.Hass):
         new_filename = os.path.join(self.download_folder, "daily-production.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}File downloaded and saved as: {new_filename}{Colors.RESET}")
     else:
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
 
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - DAILY DATA DOWNLOADED")
     date_format = "%d.%m.%Y %H:%M"
@@ -462,9 +495,9 @@ class pnd(hass.Hass):
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
         downloaded_file = self.download_folder+"/range-consumption.csv"
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename} {round(os.path.getsize(downloaded_file)/1024,2)} KB")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}File downloaded and saved as: {new_filename} {round(os.path.getsize(downloaded_file)/1024,2)} KB{Colors.RESET}")
     else:
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "No file was downloaded.")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: No file was downloaded.{Colors.RESET}")
     #----------------------------------------------
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
@@ -516,9 +549,9 @@ class pnd(hass.Hass):
         os.remove(new_filename) if os.path.exists(new_filename) else None
         os.rename(downloaded_file, new_filename)
         downloaded_file = self.download_folder+"/range-production.csv"
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"File downloaded and saved as: {new_filename} {round(os.path.getsize(downloaded_file)/1024,2)} KB")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}File downloaded and saved as: {new_filename} {round(os.path.getsize(downloaded_file)/1024,2)} KB{Colors.RESET}")
     else:
-        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +"No file was downloaded.")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}No file was downloaded.{Colors.RESET}")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - INTERVAL DATA DOWNLOADED")
     data_consumption = pd.read_csv(self.download_folder + '/range-consumption.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
     data_production = pd.read_csv(self.download_folder + '/range-production.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
@@ -558,3 +591,7 @@ class pnd(hass.Hass):
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Sensor State Set to OFF")
+    zip_folder("/homeassistant/appdaemon/apps/pnd", "/homeassistant/appdaemon/apps/debug.zip")
+    shutil.move("/homeassistant/appdaemon/apps/debug.zip", self.download_folder+"/debug.zip")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Debug Files Zipped")
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished " +  ver + f" *********************{Colors.RESET}")
