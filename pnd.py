@@ -1,4 +1,4 @@
-ver = "0.9.4.4"
+ver = "0.9.4.5"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -158,13 +158,19 @@ class pnd(hass.Hass):
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: H1 tag with text '{h1_text}' is not found.{Colors.RESET}")
         sys.exit()
-    
-    # Wait for the button to be clickable
-    wait = WebDriverWait(driver, 10)  # 10-second timeout
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
 
-    # Click the button
+    first_pnd_window = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".pnd-window")))
+    
+    #wait = WebDriverWait(driver, 10)  # 10-second timeout
+    #tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
+    tabulka_dat_button = WebDriverWait(first_pnd_window, 10).until(
+        EC.element_to_be_clickable((By.XPATH, ".//button[@title='Export']"))
+    )
+
     tabulka_dat_button.click()
+
+    #raise Exception("---STOP---")
+
     body.screenshot(self.download_folder+"/02.png")
     # Navigate to the dropdown based on its label "Sestava"
     # Find the label by text, then navigate to the associated dropdown
@@ -279,8 +285,11 @@ class pnd(hass.Hass):
     # Find and click the link by its exact text
     #print(driver.page_source)
     link_text = "07 Profil spotřeby za den (+A)"
-    link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    driver.execute_script("arguments[0].scrollIntoView();", link)
+    #!!!!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    link = WebDriverWait(first_pnd_window, 10).until(
+        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+    )        
+    #driver.execute_script("arguments[0].scrollIntoView();", link)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
     
     # Navigate to the parent element using XPath
@@ -298,7 +307,7 @@ class pnd(hass.Hass):
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
     time.sleep(2)
     toggle_button.click()
 
@@ -323,8 +332,11 @@ class pnd(hass.Hass):
     #print(driver.page_source)
     body.screenshot(self.download_folder+"/08.png")
     link_text = "08 Profil výroby za den (-A)"
-    link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    driver.execute_script("arguments[0].scrollIntoView();", link)
+    #!!!!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    link = WebDriverWait(first_pnd_window, 10).until(
+        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+    )     
+    #driver.execute_script("arguments[0].scrollIntoView();", link)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
     
     # Navigate to the parent element using XPath
@@ -342,7 +354,7 @@ class pnd(hass.Hass):
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
     time.sleep(2)
     toggle_button.click()
 
@@ -450,7 +462,10 @@ class pnd(hass.Hass):
     #print(driver.page_source)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Selecting 07 Profil spotřeby za den (+A)")
     link_text = "07 Profil spotřeby za den (+A)"
-    link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    #!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    link = WebDriverWait(first_pnd_window, 10).until(
+        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+    )    
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
     
     # Navigate to the parent element using XPath
@@ -478,7 +493,7 @@ class pnd(hass.Hass):
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
     time.sleep(1)    
     toggle_button.click()
 
@@ -506,7 +521,10 @@ class pnd(hass.Hass):
     #print(driver.page_source)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Selecting 08 Profil výroby za den (-A)")
     link_text = "08 Profil výroby za den (-A)"
-    link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    #!!!!!!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
+    link = WebDriverWait(first_pnd_window, 10).until(
+        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+    )     
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
     
     # Navigate to the parent element using XPath
@@ -532,7 +550,7 @@ class pnd(hass.Hass):
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Exporting data")
     wait = WebDriverWait(driver, 10)
     toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
 
     toggle_button.click()
 
