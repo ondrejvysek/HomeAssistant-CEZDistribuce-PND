@@ -417,7 +417,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
       
 ## 9.5.2024 - 0.9.4.4
 - [x] Kompletní přepracování způsobu a kontroly výběru ELM
-- [x] Vylepšené logování, po dokončení skriptu (pokud neskončí chybou) vytvořený debug.log - prosím zasílejte tento soubor při řešení nesouladu dat
+- [x] Vylepšené logování, po dokončení skriptu (pokud neskončí chybou) vytvořený **debug.zip** - prosím zasílejte tento soubor při řešení nesouladu dat
 
 ## 8.5.2024 - 0.9.4
 - [x] Změna označení elektromůru z EAN na ELM v konfiguračním souboru + aktualizace dokumentace
