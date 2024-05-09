@@ -411,16 +411,20 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 9.5.2024 - 0.9.4.6
 - [x] Přidána kontrola dostupných ELM
 - [x] Doplněna závislost na modulu bs4 - viz [nastavení doplňku AppDaemon](#instalace-a-nastaven%C3%AD-appdaemon)
+      
 9.5.2024 - 0.9.4.5
 - [x] Oprava chyby #7 - přidána podpora více oken v PND
+      
 9.5.2024 - 0.9.4.4
 - [x] Kompletní přepracování způsobu a kontroly výběru ELM
 - [x] Vylepšené logování, po dokončení skriptu (pokud neskončí chybou) vytvořený debug.log - prosím zasílejte tento soubor při řešení nesouladu dat
+
 8.5.2024 - 0.9.4
 - [x] Změna označení elektromůru z EAN na ELM v konfiguračním souboru + aktualizace dokumentace
 - [x] Změna logování scriptu, detailní běh není ukládán do pnd.log ale přímo do AppDaemon logu - při řešení problémů prosím o zaslání Doplňky > AppDaemon > Log
 - [x] U kritických fází je ukládán otisk obrazovky (identická cesta, kam jsou ukládány soubory s daty - parametr DownloadFolder v pnd.yaml) pro případné řešení problémů - v případě potřeby prosím o jejich poskytnutí
 - [x] Optimalizace kódu 
+
 6.5.2024 - 0.9.3
 - [x] Přidán sensor.pnd_production2consumption jako procentuální poměr mezi výrobou a spotřebou (např. využití Virtuální Baterie)
 - [x] Aktualizovaná karta celkového přehledu o sensor.pnd_production2consumption
