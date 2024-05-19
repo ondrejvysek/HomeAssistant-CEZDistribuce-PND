@@ -322,7 +322,7 @@ type: custom:apexcharts-card
 stacked: true
 graph_span: 1y
 span:
-  end: day
+  end: week
 header:
   show: true
   title: PND Historická Data (Týdenní agregace)
