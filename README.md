@@ -3,11 +3,16 @@ Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a 
 
 Po správném nastavení a spuštění scripu vznikou v Home Assistant tyto senzory:
 
-* sensor.pnd_data (obsahujíc data výroby a spotřeby za vámi zvolený interval - např období vyúčtování)
-* sensor.pnd_consumption a sensor.pnd_production v KWh je to den zpětně souhrn za den (data se vyčítají po půlnoci za den zpětně)
-* sensor.pnd_total_interval_consumption resp sensor.pnd_total_interval_production v KWh součet za období
-* sensor.pnd_production2consumption poměr mezi výrobou a spotřebou s max hodnotou 100% (např. jako indikátor Virtuální Baterie)
-* sensor.pnd_running kontrolní senzor který se zapne při spuštění a vypne při úspěšném dokončení (úspěšnost je +/-95%) lze použít v automatizaci pro opětovné spuštění skriptu
+* **sensor.pnd_data** (obsahujíc data výroby a spotřeby za vámi zvolený interval - např období vyúčtování)
+* **sensor.pnd_consumption** a **sensor.pnd_production** v KWh je to den zpětně souhrn za den (data se vyčítají po půlnoci za den zpětně)
+* **sensor.pnd_total_interval_consumption** resp **sensor.pnd_total_interval_production** v KWh součet za období
+* **sensor.pnd_production2consumption** poměr mezi výrobou a spotřebou s max hodnotou 100% (např. jako indikátor Virtuální Baterie)
+* **sensor.pnd_running** kontrolní senzor který se zapne při spuštění a vypne při úspěšném dokončení (úspěšnost je +/-95%) lze použít v automatizaci pro opětovné spuštění skriptu
+* **sensor.pnd_script_duration** kontrolní senzor obsahující délku běhu skriptu (čas se nezapíše pokud se vyskytne chyba)
+* **sensor.pnd_script_status** kontrolní senzor obsahující stav skriptu:
+  * Stav: Running - atribut Status: OK
+  * Stav: Stopped - atribut Status: Finished
+  * Stav: Error - atribut Status: chyba, kde se skript zastavil
 
 Výsledkem pak může být například takovýto dashboard (návod na jeho výrobu je popsán níže)
 
@@ -406,8 +411,16 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Zpracování více EANů (Elektroměrů)
 - [ ] Uživatelské sestavy, které by obsahovaly VT/NT,...??
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
+- [ ] Distribuce a aktualizace přes HACS
       
 # Změny
+## 20.5.2024 - 0.9.5
+- [x] Lepší ošetření chybových stavů, kontroly interakce s portálem (např chybné heslo)
+- [x] Přidán sensor.pnd_script_duration pro sledování délky běhu při normálním chodu
+- [x] Přidán sensor.pnd_script_status pro sledování stavu, chování a případné chyby skriptu
+- [x] Optimalizace časování skriptu - zrychlení
+- [x] Vyčištění kódu o pracovní části
+- [x] Oprava návodu u grafu měsíční agregace #15
 ## 9.5.2024 - 0.9.4.6
 - [x] Přidána kontrola dostupných ELM
 - [x] Doplněna závislost na modulu bs4 - viz [nastavení doplňku AppDaemon](#instalace-a-nastaven%C3%AD-appdaemon)
