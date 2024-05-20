@@ -1,9 +1,0 @@
-pnd:
-  module: pnd
-  class: pnd
-  log: pnd
-  PNDUserName: ""
-  PNDUserPassword: ""
-  DataInterval: "27.10.2023 00:00 - 27.10.2024 00:00"
-  DownloadFolder: "/homeassistant/appdaemon/apps/pnd"
-  ELM: "3000011000"
