@@ -1,0 +1,51 @@
+template:
+  - sensor:
+      - name: "PND Data"
+        icon: mdi:database-arrow-down
+        unique_id: 43d1efa0-c941-4d38-930a-5dc7ce4cfd3d
+        state: "{{ 'unknown' }}"
+      - name: "PND Production2Consumption"
+        unique_id: aeb9ef55-4db0-4ac6-93e8-d68f0ccd300d
+        unit_of_measurement: "%"
+        state: "{{ 'unknown' }}"
+        icon: mdi:home-battery-outline
+      - name: "PND Consumption"
+        unique_id: 14232aec-5dd1-4ee7-92ea-6412c156c7dc
+        unit_of_measurement: "kWh"
+        device_class: "energy"
+        icon: mdi:lightning-bolt
+        state: "{{ 'unknown' }}"
+      - name: "PND Production"
+        unique_id: 6dc5fec0-f3c3-426b-85d4-71d2945d8109
+        unit_of_measurement: "kWh"
+        device_class: "energy"
+        icon: mdi:lightning-bolt
+        state: "{{ 'unknown' }}"
+      - name: "PND Total Interval Consumption"
+        unique_id: dbd8815a-480d-4be5-9348-26e848fd8013
+        unit_of_measurement: "kWh"
+        device_class: "energy"
+        icon: mdi:lightning-bolt
+        state: "{{ 'unknown' }}"
+      - name: "PND Total Interval Production"
+        unique_id: ba4361c6-fea7-420c-9750-65225a0a189e
+        unit_of_measurement: "kWh"
+        device_class: "energy"
+        icon: mdi:lightning-bolt
+        state: "{{ 'unknown' }}"
+      - name: "PND Script Duration"
+        unique_id: af923e96-effd-46b6-96d8-ef61276b3e4a
+        icon: mdi:timelapse
+        state: "{{ 'unknown' }}"
+      - name: "PND Script Status"
+        unique_id: 50f46b0d-15e5-44e4-b75e-fa66e19582c8
+        icon: mdi:list-status
+        state: "{{ 'unknown' }}"
+      - name: "PND Add Version"
+        unique_id: 7884f630-c949-45b5-807b-c43417a9ade2
+        icon: mdi:check-decagram
+        state: "{{ 'unknown' }}"
+  - binary_sensor:
+      - name: "PND Running"
+        unique_id: 1f1c154f-c5ea-4eae-94c0-69425334b48b
+        state: "off"
