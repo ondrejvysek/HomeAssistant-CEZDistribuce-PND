@@ -13,6 +13,7 @@ Po správném nastavení a spuštění scripu vznikou v Home Assistant tyto senz
   * Stav: Running - atribut Status: OK
   * Stav: Stopped - atribut Status: Finished
   * Stav: Error - atribut Status: chyba, kde se skript zastavil
+* **sensor.pnd_app_version** senzor s verzí aplikace PND
 
 Výsledkem pak může být například takovýto dashboard (návod na jeho výrobu je popsán níže)
 
@@ -418,9 +419,11 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [x] Lepší ošetření chybových stavů, kontroly interakce s portálem (např chybné heslo) [#16](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/16)
 - [x] Přidán sensor.pnd_script_duration pro sledování délky běhu při normálním chodu
 - [x] Přidán sensor.pnd_script_status pro sledování stavu, chování a případné chyby skriptu
+- [x] Přidán sensor.pnd_app_version s verzí aplikace PND
 - [x] Optimalizace časování skriptu - zrychlení
 - [x] Vyčištění kódu o pracovní části
 - [x] Oprava návodu u grafu měsíční agregace [#15](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/15)
+- [x] Přidán ukázkový soubor pro senzory sensors.yaml
 ## 9.5.2024 - 0.9.4.6
 - [x] Přidána kontrola dostupných ELM
 - [x] Doplněna závislost na modulu bs4 - viz [nastavení doplňku AppDaemon](#instalace-a-nastaven%C3%AD-appdaemon)
