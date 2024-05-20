@@ -41,7 +41,7 @@ template:
         unique_id: 50f46b0d-15e5-44e4-b75e-fa66e19582c8
         icon: mdi:list-status
         state: "{{ 'unknown' }}"
-      - name: "PND Add Version"
+      - name: "PND App Version"
         unique_id: 7884f630-c949-45b5-807b-c43417a9ade2
         icon: mdi:check-decagram
         state: "{{ 'unknown' }}"
