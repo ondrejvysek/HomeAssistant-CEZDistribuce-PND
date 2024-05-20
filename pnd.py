@@ -1,4 +1,4 @@
-ver = "0.9.4.6"
+ver = "0.9.5"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -86,13 +86,17 @@ class pnd(hass.Hass):
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": >>>>>>>>>>>> PND Terminate")
 
   def run_pnd(self, event_name, data, kwargs):
+    script_start_time = dt.now()
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting " +  ver + f" *********************{Colors.RESET}")
     self.set_state("binary_sensor.pnd_running", state="on")
+    self.set_state("sensor.pnd_script_status", state="Running",attributes={
+      "status": "OK",
+      "friendly_name": "PND Script Status"
+    })    
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": ----------------------------------------------")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Hello from AppDaemon for Portal Namerenych Dat")
     delete_folder_contents(self.download_folder+"/")    
     os.makedirs(self.download_folder, exist_ok=True)
-    #sys.exit()
     chrome_options = Options()
     chrome_options.add_experimental_option("prefs", {
         "download.default_directory": self.download_folder,  # Set download folder
@@ -112,8 +116,13 @@ class pnd(hass.Hass):
       driver = webdriver.Chrome(service=service, options=chrome_options)
       print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Driver Loaded")
     except:
-      self.error("Unable to initialize Chrome Driver - exitting")
-      sys.exit()
+      print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to initialize Chrome Driver - exitting{Colors.RESET}")
+      self.set_state("binary_sensor.pnd_running", state="off")
+      self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        "status": "ERROR: Nepodařilo se inicializovat Chrome Driver, zkontroluj nastavení AppDaemon",
+        "friendly_name": "PND Script Status"
+      })
+      raise Exception("Unable to initialize Chrome Driver - exitting")
     # Open a website
     driver.set_window_size(1920, 1080)
     try:
@@ -121,56 +130,78 @@ class pnd(hass.Hass):
       print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Website Opened")
     except:
       print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to open website - exitting{Colors.RESET}")
-      sys.exit()
+      self.set_state("binary_sensor.pnd_running", state="off")
+      self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        "status": "ERROR: Nepodařilo se otevřít webovou stránku PND portálu",
+        "friendly_name": "PND Script Status"
+      })      
+      raise Exception("Unable to open website - exitting")
     time.sleep(3)  # Allow time for the page to load
     # Locate the element that might be blocking the login button
     cookie_banner_close_button = driver.find_element(By.ID, "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowallSelection")
-
     # Click the close button or take other action to dismiss the cookie banner
     cookie_banner_close_button.click()
-    time.sleep(3)  # Allow time for the page to load
+    time.sleep(1)  # Allow time for the page to load
     # Simulate login
     username_field = driver.find_element(By.XPATH, "//input[@placeholder='Uživatelské jméno / e-mail']")
     password_field = driver.find_element(By.XPATH, "//input[@placeholder='Heslo']")
     login_button = driver.find_element(By.XPATH, "//button[@type='submit' and @color='primary']")
-
     # Enter login credentials and click the button
     username_field.send_keys(self.username)
     password_field.send_keys(self.password) 
-
     # Wait until the login button is clickable
     wait = WebDriverWait(driver, 10)  # 10-second timeout
     login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit' and @color='primary']")))
+    body = driver.find_element(By.TAG_NAME, 'body')
+    body.screenshot(self.download_folder+"/00.png")
     login_button.click()
 
     # Allow time for login processing
-    time.sleep(3)  # Adjust as needed
+    time.sleep(5)  # Adjust as needed
 
     wait = WebDriverWait(driver, 20)  # 10-second timeout
     body = driver.find_element(By.TAG_NAME, 'body')
-    #portal_title = wait.until(EC.presence_of_element_located((By.XPATH, "//h1[contains(text(), 'Naměřená data')]"))).text
     # Check if the specified H1 tag is present
     h1_text = "Naměřená data"
-    h1_element = wait.until(EC.presence_of_element_located((By.XPATH, f"//h1[contains(text(), '{h1_text}')]")))
+    try:
+        h1_element = wait.until(EC.presence_of_element_located((By.XPATH, f"//h1[contains(text(), '{h1_text}')]")))
+    except:
+        alert_widget_content = driver.find_element(By.CLASS_NAME, "alertWidget__content").text
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: {alert_widget_content}{Colors.RESET}")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        "status": "ERROR: Není možné se přihlásit do aplikace",
+        "friendly_name": "PND Script Status"
+        })            
+        raise Exception(f"Unable to login to the app")
+
+    version_element = driver.find_element(By.XPATH, "//div[contains(text(), 'Verze aplikace:')]")
+    version_text = version_element.text
+    version_number = version_text.split(':')[1].strip()
+    self.set_state("sensor.pnd_app_version", state=version_number,attributes={
+      "friendly_name": "PND App Version",
+    })
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"App Version: {version_number}")
     body.screenshot(self.download_folder+"/01.png")
     # Print whether the H1 tag with the specified text is found
     if h1_element:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"H1 tag with text '{h1_text}' is present.")
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: H1 tag with text '{h1_text}' is not found.{Colors.RESET}")
-        sys.exit()
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Text '{h1_text}' nebyl nalezen na stránce, zkuste skript spustit později znovu.",
+            "friendly_name": "PND Script Status"
+        })        
+        raise Exception(f"Failed to find H1 tag with text '{h1_text}'")
 
     first_pnd_window = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".pnd-window")))
     
-    #wait = WebDriverWait(driver, 10)  # 10-second timeout
-    #tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
+    # Find the button by its title attribute
     tabulka_dat_button = WebDriverWait(first_pnd_window, 10).until(
         EC.element_to_be_clickable((By.XPATH, ".//button[@title='Export']"))
     )
 
     tabulka_dat_button.click()
-
-    #raise Exception("---STOP---")
 
     body.screenshot(self.download_folder+"/02.png")
     # Navigate to the dropdown based on its label "Sestava"
@@ -195,6 +226,11 @@ class pnd(hass.Hass):
             continue
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Rychla Sestava neni mozne vybrat!{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": "ERROR: Nebylo možné vybrat 'Rychlá sestava' po 10 pokusech. Zkuste skript spustit později znovu.",
+            "friendly_name": "PND Script Status"
+        })        
         raise Exception("Failed to find 'Rychlá sestava' after 10 attempts")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.GREEN}Rychla Sestava selected successfully!{Colors.RESET}")
     body.screenshot(self.download_folder+"/03.png")
@@ -204,7 +240,6 @@ class pnd(hass.Hass):
 
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": Selecting ELM '{self.ELM}'")
 
-
     soup = BeautifulSoup(driver.page_source, 'html.parser')
     dropdown_label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Množina zařízení')]")))
     parent_element = dropdown_label.find_element(By.XPATH, ".//ancestor::div[contains(@class, 'form-group')]")
@@ -213,9 +248,6 @@ class pnd(hass.Hass):
     elm_values = [span.text for span in elm_spans]
     elm_values_string = ", ".join(elm_values)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": Valid ELM numbers '{elm_values_string}'")
-
-
-
 
     # Navigate to the dropdown based on its label "Množina zařízení"
     # Find the label by text, then navigate to the associated dropdown
@@ -237,6 +269,11 @@ class pnd(hass.Hass):
             option = wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[contains(text(), '{self.ELM}')]")))
         except:
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find '{self.ELM}' in the selection - check ELM attribute in the apps.yaml{Colors.RESET}")
+            self.set_state("binary_sensor.pnd_running", state="off")
+            self.set_state("sensor.pnd_script_status", state="Error",attributes={
+                "status": f"ERROR: Nebylo možné najít '{self.ELM}' v nabídce. Zkontrolujte ELM atribut v nastavení aplikace.",
+                "friendly_name": "PND Script Status"
+            })            
             raise Exception(f"Failed to find '{self.ELM}' in the selection")
         option.click()
         body.screenshot(self.download_folder+f"/03-{i}-b.png")
@@ -258,83 +295,103 @@ class pnd(hass.Hass):
             file.write(parent_element.get_attribute('outerHTML')+ "\n")                         
         if 'disabled' not in class_attribute and span.strip() != '':
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Iteration {i}: Vyhledat Button NOT disabled{Colors.RESET}")
-            #print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}{parent_element.get_attribute('outerHTML')}{Colors.RESET}")
             break
         else:
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.YELLOW}Iteration {i}: Vyhledat Button IS disabled{Colors.RESET}")
-            #print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}{parent_element.get_attribute('outerHTML')}{Colors.RESET}")            
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Failed to find '{self.ELM}' after 10 attempts{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nebylo možné najít '{self.ELM}' po 10 pokusech. Zkontrolujte ELM atribut v nastavení aplikace.",
+            "friendly_name": "PND Script Status"
+        })        
         raise Exception(f"Failed to find '{self.ELM}' after 10 attempts")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Device ELM '{self.ELM}' selected successfully!{Colors.RESET}")
     body.screenshot(self.download_folder+"/04.png")
+    
     # Navigate to the dropdown based on its label "Období"
     # Use the label text to find the dropdown button
-    wait = WebDriverWait(driver, 2)
-    dropdown_label = wait.until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'Období')]")))
-    dropdown_container = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")
-    dropdown_container.click()
-
-    # Now, wait for the option labeled "Včera" to be visible and clickable, then click it
-    wait = WebDriverWait(driver, 2)
-    option_vcera = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Včera') and contains(@class, 'multiselect__option')]")))
-    option_vcera.click()
+    try:
+        wait = WebDriverWait(driver, 2)
+        dropdown_label = wait.until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'Období')]")))
+        dropdown_container = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")
+        dropdown_container.click()
+        # Now, wait for the option labeled "Včera" to be visible and clickable, then click it
+        wait = WebDriverWait(driver, 2)
+        option_vcera = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Včera') and contains(@class, 'multiselect__option')]")))
+        option_vcera.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to select 'Včera' in the dropdown{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": "ERROR: Nepodařilo se vybrat 'Včera' v nabídce",
+            "friendly_name": "PND Script Status"
+        })        
+        raise Exception("Failed to select 'Včera' in the dropdown")
     body.screenshot(self.download_folder+"/05.png")
-    # Locate the input field "Vyhledat data" and click it
-    
     # Check for the presence of the button and then check if it's clickable
     try:
-        # Use a more specific XPath to ensure the correct button is targeted
         button = wait.until(EC.presence_of_element_located((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
-        #### After confirming the presence, wait until it's actually clickable
-        ###button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(., 'Vyhledat data')]")))
         button.click()
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Button 'Vyhledat data' clicked successfully!{Colors.RESET}")
     except Exception as e:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}Failed to find or click the 'Vyhledat data' button:{Colors.RESET}", str(e))
-    
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": "ERROR: Nepodařilo se nalézt nebo kliknout na tlačítko 'Vyhledat data'",
+            "friendly_name": "PND Script Status"
+        })        
+        raise Exception("Failed to find or click the 'Vyhledat data' button")    
     body.screenshot(self.download_folder+"/06.png")
-    time.sleep(5)
+    time.sleep(2)
     body.click()
-
-    #raise Exception("---STOP---")
 
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
     body.screenshot(self.download_folder+"/07.png")
     # Find and click the link by its exact text
-    #print(driver.page_source)
-    link_text = "07 Profil spotřeby za den (+A)"
-    #!!!!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    link = WebDriverWait(first_pnd_window, 10).until(
-        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
-    )        
-    #driver.execute_script("arguments[0].scrollIntoView();", link)
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
-    
-    # Navigate to the parent element using XPath
-    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
-    # Get the HTML of the parent element
-    parent_html = parent_element.get_attribute('outerHTML')
-    # Print the current date and time along with the link text and parent HTML
-    #print("Parent HTML:", parent_html)    
-    time.sleep(3)
-    body.screenshot(self.download_folder+"/daily-body-07a.png")
-    link.click()
-    body.screenshot(self.download_folder+"/daily-body-07b.png")
-    body.click()
-    body.screenshot(self.download_folder+"/daily-body-07c.png")
+    try:
+        link_text = "07 Profil spotřeby za den (+A)"
+        link = WebDriverWait(first_pnd_window, 10).until(
+            EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+        )        
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+        
+        # Navigate to the parent element using XPath
+        parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+        # Get the HTML of the parent element
+        parent_html = parent_element.get_attribute('outerHTML')
+        time.sleep(2)
+        body.screenshot(self.download_folder+"/daily-body-07a.png")
+        link.click()
+        body.screenshot(self.download_folder+"/daily-body-07b.png")
+        body.click()
+        body.screenshot(self.download_folder+"/daily-body-07c.png")
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se najít odkaz pro denní export {link_text}",
+            "friendly_name": "PND Script Status"
+        })
     # Wait for the dropdown toggle and click it using the button text
-    wait = WebDriverWait(driver, 10)
-    toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
-    time.sleep(2)
-    toggle_button.click()
+    try:
+        wait = WebDriverWait(driver, 10)
+        toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+        time.sleep(2)
+        toggle_button.click()
 
-    # Wait for the CSV link and click it
-    csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
-    csv_link.click()
+        # Wait for the CSV link and click it
+        csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
+        csv_link.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro denní export {link_text}",
+            "friendly_name": "PND Script Status"
+        })
     # Wait for the download to complete
     downloaded_file = wait_for_download(self.download_folder)
     # Rename the file if it was downloaded
@@ -349,39 +406,49 @@ class pnd(hass.Hass):
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
 
     # Find and click the link by its exact text
-    #print(driver.page_source)
     body.screenshot(self.download_folder+"/08.png")
-    link_text = "08 Profil výroby za den (-A)"
-    #!!!!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    link = WebDriverWait(first_pnd_window, 10).until(
-        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
-    )     
-    #driver.execute_script("arguments[0].scrollIntoView();", link)
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
-    
-    # Navigate to the parent element using XPath
-    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
-    # Get the HTML of the parent element
-    parent_html = parent_element.get_attribute('outerHTML')
-    # Print the current date and time along with the link text and parent HTML
-    #print("Parent HTML:", parent_html)    
-    time.sleep(3)
-    body.screenshot(self.download_folder+"/daily-body-08a.png")
-    link.click()
-    body.screenshot(self.download_folder+"/daily-body-08b.png")
-    body.click()
-    body.screenshot(self.download_folder+"/daily-body-08c.png")
+    try:
+        link_text = "08 Profil výroby za den (-A)"
+        link = WebDriverWait(first_pnd_window, 10).until(
+            EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+        )     
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+        
+        # Navigate to the parent element using XPath
+        parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+        # Get the HTML of the parent element
+        parent_html = parent_element.get_attribute('outerHTML')
+        time.sleep(2)
+        body.screenshot(self.download_folder+"/daily-body-08a.png")
+        link.click()
+        body.screenshot(self.download_folder+"/daily-body-08b.png")
+        body.click()
+        body.screenshot(self.download_folder+"/daily-body-08c.png")
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se najít odkaz pro denní export {link_text}",
+            "friendly_name": "PND Script Status"
+        })
     # Wait for the dropdown toggle and click it using the button text
     wait = WebDriverWait(driver, 10)
-    toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
-    time.sleep(2)
-    toggle_button.click()
-
-    # Wait for the CSV link and click it
-    csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
-    csv_link.click()
+    try:
+        toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+        time.sleep(2)
+        toggle_button.click()
+        
+        # Wait for the CSV link and click it
+        csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
+        csv_link.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro denní export{link_text}",
+            "friendly_name": "PND Script Status"
+        })
     # Wait for the download to complete
     downloaded_file = wait_for_download(self.download_folder)
     # Rename the file if it was downloaded
@@ -433,94 +500,112 @@ class pnd(hass.Hass):
 
     #------------------INTERVAL-----------------------------
     ## Use the label text to find the dropdown button
-    dropdown_label = wait.until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'Období')]")))
-    dropdown_container = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")
-    dropdown_container.click()
+    try:
+        dropdown_label = wait.until(EC.element_to_be_clickable((By.XPATH, "//label[contains(text(), 'Období')]")))
+        dropdown_container = dropdown_label.find_element(By.XPATH, "./following-sibling::div//div[contains(@class, 'multiselect__select')]")
+        dropdown_container.click()
 
-    ## Now, wait for the option labeled "Včera" to be visible and clickable, then click it
-    option_vcera = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Vlastní') and contains(@class, 'multiselect__option')]")))
-    option_vcera.click()
-    # Locate the input field by its ID
-    ###input_field = driver.find_element(By.ID, "window-120274-interval")
+        ## Now, wait for the option labeled "Včera" to be visible and clickable, then click it
+        option_vcera = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[contains(text(), 'Vlastní') and contains(@class, 'multiselect__option')]")))
+        option_vcera.click()
 
-    # Locate the input by finding the label then navigating to the input
-    label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Vlastní období')]")))
-    input_field = label.find_element(By.XPATH, "./following::input[1]")  # Adjust based on actual DOM structure
+        # Locate the input by finding the label then navigating to the input
+        label = wait.until(EC.visibility_of_element_located((By.XPATH, "//label[contains(text(), 'Vlastní období')]")))
+        input_field = label.find_element(By.XPATH, "./following::input[1]")  # Adjust based on actual DOM structure
 
-    # Clear the input field first if necessary
-    input_field.clear()
+        # Clear the input field first if necessary
+        input_field.clear()
 
-    # Enter the date range into the input field
-    date_range = self.datainterval
-    input_field.send_keys(date_range)
+        # Enter the date range into the input field
+        date_range = self.datainterval
+        input_field.send_keys(date_range)
 
-    # Optionally, you can send ENTER or TAB if needed to process the input
-    input_field.send_keys(Keys.TAB)  # or Keys.TAB if you need to move out of the input field
-    body.click()
+        # Optionally, you can send ENTER or TAB if needed to process the input
+        input_field.send_keys(Keys.TAB)  # or Keys.TAB if you need to move out of the input field
+        body.click()
+    except: 
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to select 'Vlastní období' in the dropdown{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": "ERROR: Nepodařilo se vybrat 'Vlastní období' v nabídce",
+            "friendly_name": "PND Script Status"
+        })        
+        raise Exception("Failed to select 'Vlastní období' in the dropdown")
     # Confirmation output (optional)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Data Interval Entered - '{self.datainterval}'")
     #-----------------------------------------------
-    time.sleep(3)
-    #button = wait.until(EC.element_to_be_clickable((By.XPATH, f"//button[contains(text(), 'Vyhledat data')]")))
-    #driver.execute_script("arguments[0].scrollIntoView();", link)
-    #button.click()
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
-    # Click the button
-    tabulka_dat_button.click()    
-    time.sleep(3)
-    #button.click()
-    tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
-    # Click the button
-    tabulka_dat_button.click()    
-    body.click()
-    
+    time.sleep(1)
+    try:
+        tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Tabulka dat']")))
+        # Click the button
+        tabulka_dat_button.click()    
+        time.sleep(1)
+        tabulka_dat_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@title='Export']")))
+        # Click the button
+        tabulka_dat_button.click()    
+        body.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to click 'Tabulka dat' button{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": "ERROR: Nepodařilo se kliknout na tlačítko 'Tabulka dat'",
+            "friendly_name": "PND Script Status"
+        })        
+        raise Exception("Failed to click 'Tabulka dat' button")    
 
     # Wait for the page and elements to fully load
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
 
     # Find and click the link by its exact text
-    #print(driver.page_source)
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Selecting 07 Profil spotřeby za den (+A)")
-    link_text = "07 Profil spotřeby za den (+A)"
-    #!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    link = WebDriverWait(first_pnd_window, 10).until(
-        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
-    )    
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+    try:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Selecting 07 Profil spotřeby za den (+A)")
+        link_text = "07 Profil spotřeby za den (+A)"
+        link = WebDriverWait(first_pnd_window, 10).until(
+            EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+        )    
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+        
+        # Navigate to the parent element using XPath
+        parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+        # Get the HTML of the parent element
+        parent_html = parent_element.get_attribute('outerHTML')
+        # Use ActionChains to move to the element
+        actions = ActionChains(driver)
+        actions.move_to_element(link).perform()    
+        time.sleep(1)
+        body.screenshot(self.download_folder+"/interval-body-07a.png")
+        link.click()
+        body.screenshot(self.download_folder+"/interval-body-07b.png")
+        time.sleep(1)
+        body.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se najít odkaz pro interval export {link_text}",
+            "friendly_name": "PND Script Status"
+        })
     
-    # Navigate to the parent element using XPath
-    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
-    # Get the HTML of the parent element
-    parent_html = parent_element.get_attribute('outerHTML')
-    # Print the current date and time along with the link text and parent HTML
-    #print("Parent HTML:", parent_html)
-
-
-
-    #driver.execute_script("arguments[0].scrollIntoView();", link)
-    # Use ActionChains to move to the element
-    actions = ActionChains(driver)
-    actions.move_to_element(link).perform()    
-    time.sleep(1)
-    body.screenshot(self.download_folder+"/interval-body-07a.png")
-    link.click()
-    body.screenshot(self.download_folder+"/interval-body-07b.png")
-    time.sleep(1)
-    body.click()
     body.screenshot(self.download_folder+"/interval-body-07c.png")
 
     # Wait for the dropdown toggle and click it using the button text
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Exporting data")
     wait = WebDriverWait(driver, 10)
-    toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
-    time.sleep(1)    
-    toggle_button.click()
+    try:
+        toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+        time.sleep(1)    
+        toggle_button.click()
 
-    # Wait for the CSV link and click it
-    csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
-    csv_link.click()
-
+        # Wait for the CSV link and click it
+        csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
+        csv_link.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro interval export {link_text}",
+            "friendly_name": "PND Script Status"
+        })
     # Wait for the download to complete
     downloaded_file = wait_for_download(self.download_folder)
 
@@ -538,46 +623,55 @@ class pnd(hass.Hass):
     wait = WebDriverWait(driver, 10)  # Adjust timeout as necessary
 
     # Find and click the link by its exact text
-    #print(driver.page_source)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Selecting 08 Profil výroby za den (-A)")
     link_text = "08 Profil výroby za den (-A)"
-    #!!!!!!!!!!!!link = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, link_text)))
-    link = WebDriverWait(first_pnd_window, 10).until(
-        EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
-    )     
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
-    
-    # Navigate to the parent element using XPath
-    parent_element = driver.execute_script("return arguments[0].parentNode;", link)
-    # Get the HTML of the parent element
-    parent_html = parent_element.get_attribute('outerHTML')
-    # Print the current date and time along with the link text and parent HTML
-    #print("Parent HTML:", parent_html)    
-    #driver.execute_script("arguments[0].scrollIntoView();", link)
-    # Use ActionChains to move to the element
-    actions = ActionChains(driver)
-    actions.move_to_element(link).perform()    
-    
-    body.screenshot(self.download_folder+"/interval-body-08a.png")
-    time.sleep(1)
-    link.click()
-    body.screenshot(self.download_folder+"/interval-body-08b.png")
-    time.sleep(1)
-    body.click()
-    body.screenshot(self.download_folder+"/interval-body-08c.png")
-
+    try:
+        link = WebDriverWait(first_pnd_window, 10).until(
+            EC.element_to_be_clickable((By.XPATH, ".//a[contains(text(), '" + link_text + "')]"))
+        )     
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " +  link.text)
+        
+        # Navigate to the parent element using XPath
+        parent_element = driver.execute_script("return arguments[0].parentNode;", link)
+        # Get the HTML of the parent element
+        parent_html = parent_element.get_attribute('outerHTML')
+        # Use ActionChains to move to the element
+        actions = ActionChains(driver)
+        actions.move_to_element(link).perform()    
+        
+        body.screenshot(self.download_folder+"/interval-body-08a.png")
+        time.sleep(1)
+        link.click()
+        body.screenshot(self.download_folder+"/interval-body-08b.png")
+        time.sleep(1)
+        body.click()
+        body.screenshot(self.download_folder+"/interval-body-08c.png")
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se najít odkaz pro interval export {link_text}",
+            "friendly_name": "PND Script Status"
+        })
     # Wait for the dropdown toggle and click it using the button text
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Exporting data")
     wait = WebDriverWait(driver, 10)
-    toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
-    #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
+    try:
+        toggle_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Exportovat data')]")))
+        #driver.execute_script("arguments[0].scrollIntoView();", toggle_button)
 
-    toggle_button.click()
+        toggle_button.click()
 
-    # Wait for the CSV link and click it
-    csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
-    csv_link.click()
-
+        # Wait for the CSV link and click it
+        csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
+        csv_link.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro interval export {link_text}",
+            "friendly_name": "PND Script Status"
+        })
     # Wait for the download to complete
     downloaded_file = wait_for_download(self.download_folder)
 
@@ -632,4 +726,13 @@ class pnd(hass.Hass):
     zip_folder("/homeassistant/appdaemon/apps/pnd", "/homeassistant/appdaemon/apps/debug.zip")
     shutil.move("/homeassistant/appdaemon/apps/debug.zip", self.download_folder+"/debug.zip")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Debug Files Zipped")
+    script_end_time = dt.now()
+    script_duration = script_end_time - script_start_time
+    self.set_state("sensor.pnd_script_duration", state=script_duration,attributes={
+      "friendly_name": "PND Script Duration",
+    })
+    self.set_state("sensor.pnd_script_status", state="Stopped",attributes={
+      "status": "Finished",
+    })        
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.CYAN}********************* Duration: {script_duration} *********************{Colors.RESET}")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Finished " +  ver + f" *********************{Colors.RESET}")
