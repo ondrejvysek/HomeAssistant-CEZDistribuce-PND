@@ -415,7 +415,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
       
 # Změny
 ## 20.5.2024 - 0.9.5
-- [x] Lepší ošetření chybových stavů, kontroly interakce s portálem (např chybné heslo)
+- [x] Lepší ošetření chybových stavů, kontroly interakce s portálem (např chybné heslo) [#16](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/16)
 - [x] Přidán sensor.pnd_script_duration pro sledování délky běhu při normálním chodu
 - [x] Přidán sensor.pnd_script_status pro sledování stavu, chování a případné chyby skriptu
 - [x] Optimalizace časování skriptu - zrychlení
