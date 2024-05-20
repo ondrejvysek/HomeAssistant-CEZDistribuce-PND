@@ -423,7 +423,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [x] Optimalizace časování skriptu - zrychlení
 - [x] Vyčištění kódu o pracovní části
 - [x] Oprava návodu u grafu měsíční agregace [#15](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/15)
-- [x] Přidán ukázkový soubor pro senzory sensors.yaml
+- [x] Přidán ukázkový soubor pro senzory sensors.yaml [#4](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/4)
 ## 9.5.2024 - 0.9.4.6
 - [x] Přidána kontrola dostupných ELM
 - [x] Doplněna závislost na modulu bs4 - viz [nastavení doplňku AppDaemon](#instalace-a-nastaven%C3%AD-appdaemon)
