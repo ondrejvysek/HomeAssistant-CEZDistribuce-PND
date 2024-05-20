@@ -1,1 +1,12 @@
-
+{
+  "name": "PND",
+  "content_in_root": false,
+  "domains": [
+    "python_script"
+  ],
+  "country": "CZ",
+  "zip_release": false,
+  "homeassistant": "2023.5.0",
+  "render_readme": true,
+  "releases": true
+}
