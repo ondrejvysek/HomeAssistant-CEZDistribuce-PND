@@ -137,25 +137,42 @@ class pnd(hass.Hass):
       })      
       raise Exception("Unable to open website - exitting")
     time.sleep(3)  # Allow time for the page to load
-    # Locate the element that might be blocking the login button
-    cookie_banner_close_button = driver.find_element(By.ID, "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowallSelection")
-    # Click the close button or take other action to dismiss the cookie banner
-    cookie_banner_close_button.click()
+    try:
+        # Locate the element that might be blocking the login button
+        cookie_banner_close_button = driver.find_element(By.ID, "CybotCookiebotDialogBodyLevelButtonLevelOptinAllowallSelection")
+        # Click the close button or take other action to dismiss the cookie banner
+        cookie_banner_close_button.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "No cookie banner found")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": "ERROR: Nepodařilo se nalézt cookie banner, zkuste za chvíli znovu spustit skript.",
+            "friendly_name": "PND Script Status"
+        })      
+        raise Exception("Unable to open website - exitting")       
     time.sleep(1)  # Allow time for the page to load
     # Simulate login
-    username_field = driver.find_element(By.XPATH, "//input[@placeholder='Uživatelské jméno / e-mail']")
-    password_field = driver.find_element(By.XPATH, "//input[@placeholder='Heslo']")
-    login_button = driver.find_element(By.XPATH, "//button[@type='submit' and @color='primary']")
-    # Enter login credentials and click the button
-    username_field.send_keys(self.username)
-    password_field.send_keys(self.password) 
-    # Wait until the login button is clickable
-    wait = WebDriverWait(driver, 10)  # 10-second timeout
-    login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit' and @color='primary']")))
-    body = driver.find_element(By.TAG_NAME, 'body')
-    body.screenshot(self.download_folder+"/00.png")
-    login_button.click()
-
+    try:
+        username_field = driver.find_element(By.XPATH, "//input[@placeholder='Uživatelské jméno / e-mail']")
+        password_field = driver.find_element(By.XPATH, "//input[@placeholder='Heslo']")
+        login_button = driver.find_element(By.XPATH, "//button[@type='submit' and @color='primary']")
+        # Enter login credentials and click the button
+        username_field.send_keys(self.username)
+        password_field.send_keys(self.password) 
+        # Wait until the login button is clickable
+        wait = WebDriverWait(driver, 10)  # 10-second timeout
+        login_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[@type='submit' and @color='primary']")))
+        body = driver.find_element(By.TAG_NAME, 'body')
+        body.screenshot(self.download_folder+"/00.png")
+        login_button.click()
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to enter login details or find and click the login button{Colors.RESET}")
+        self.set_state("binary_sensor.pnd_running", state="off")
+        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            "status": "ERROR: Nepodařilo se vyplnit přihlašovací údaje nebo najít a kliknout na tlačítko pro přihlášení",
+            "friendly_name": "PND Script Status"
+        })        
+        raise Exception("Failed to find or click the login button")
     # Allow time for login processing
     time.sleep(5)  # Adjust as needed
 
