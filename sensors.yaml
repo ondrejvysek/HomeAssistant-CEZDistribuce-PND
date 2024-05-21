@@ -1,3 +1,5 @@
+# Tento soubor slouží jako ukázka a je nutné jej buď umístit do configuration.yaml nebo přidat do home assistant pomocí template: !include
+
 template:
   - sensor:
       - name: "PND Data"
