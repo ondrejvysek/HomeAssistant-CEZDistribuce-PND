@@ -1,4 +1,4 @@
-ver = "0.9.5"
+ver = "0.9.6"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -725,12 +725,24 @@ class pnd(hass.Hass):
       "device_class": "energy",
       "unit_of_measurement": "kWh"
     })
-    comparison = min(round(float(total_production) / float(total_consumption) * 100, 2), 100)
-    self.set_state("sensor.pnd_production2consumption", state=comparison,attributes={
-      "friendly_name": "PND Interval Production to Consumption",
+    percentage_diff = round((float(total_production) / float(total_consumption)) * 100, 2)
+    capped_percentage_diff = min(percentage_diff, 100)
+    floored_min_percentage_diff = max(percentage_diff - 100, 0)
+    self.set_state("sensor.pnd_production2consumption", state=capped_percentage_diff,attributes={
+      "friendly_name": "PND Interval Production to Consumption Max",
       "device_class": "energy",
       "unit_of_measurement": "%"
     })
+    self.set_state("sensor.pnd_production2consumptionfull", state=percentage_diff,attributes={
+      "friendly_name": "PND Interval Production to Consumption Full",
+      "device_class": "energy",
+      "unit_of_measurement": "%"
+    })    
+    self.set_state("sensor.pnd_production2consumptionfloor", state=floored_min_percentage_diff,attributes={
+      "friendly_name": "PND Interval Production to Consumption Floor",
+      "device_class": "energy",
+      "unit_of_measurement": "%"
+    })        
     #----------------------------------------------
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - INTERVAL DATA PROCESSED")
 
