@@ -1,7 +1,8 @@
 # Home Assistant ČEZ Distribuce Portál Naměřených Dat
 Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech
 
-Pokud se vám skript líbí, můžete mne podpořit v další tvorbě a rozvoji :) [https://buymeacoffee.com/ondrejv](https://buymeacoffee.com/ondrejv)
+Pokud se vám skript líbí, můžete mne podpořit v další tvorbě a rozvoji :) [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/ondrejv)
+
 
 Po správném nastavení a spuštění scripu vznikou v Home Assistant tyto senzory:
 
