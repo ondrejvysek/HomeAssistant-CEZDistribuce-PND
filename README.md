@@ -12,6 +12,8 @@ Po správném nastavení a spuštění scripu vznikou v Home Assistant tyto senz
 * **sensor.pnd_consumption** a **sensor.pnd_production** v KWh je to den zpětně souhrn za den (data se vyčítají po půlnoci za den zpětně)
 * **sensor.pnd_total_interval_consumption** resp **sensor.pnd_total_interval_production** v KWh součet za období
 * **sensor.pnd_production2consumption** poměr mezi výrobou a spotřebou s max hodnotou 100% (např. jako indikátor Virtuální Baterie)
+* **sensor.pnd_production2consumptionfull** stejný jako předchozí, bez omezení na 100%
+* **sensor.pnd_production2consumptionfloor** rezerva virtuální baterie, tj cokoliv co je nad 100% s minimem 0% pokud je poměr pod 100%
 * **sensor.pnd_running** kontrolní senzor který se zapne při spuštění a vypne při úspěšném dokončení (úspěšnost je +/-95%) lze použít v automatizaci pro opětovné spuštění skriptu
 * **sensor.pnd_script_duration** kontrolní senzor obsahující délku běhu skriptu (čas se nezapíše pokud se vyskytne chyba)
 * **sensor.pnd_script_status** kontrolní senzor obsahující stav skriptu:
@@ -420,6 +422,11 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Distribuce a aktualizace přes HACS
       
 # Změny
+## 28.5.2024 - 0.9.6
+- [x] Pridány senzory:
+**sensor.pnd_production2consumptionfull** stejný jako předchozí, bez omezení na 100%
+**sensor.pnd_production2consumptionfloor** rezerva virtuální baterie, tj cokoliv co je nad 100% s minimem 0% pokud je poměr pod 100%
+
 ## 20.5.2024 - 0.9.5
 - [x] Lepší ošetření chybových stavů, kontroly interakce s portálem (např chybné heslo) [#16](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/16)
 - [x] Přidán sensor.pnd_script_duration pro sledování délky běhu při normálním chodu
