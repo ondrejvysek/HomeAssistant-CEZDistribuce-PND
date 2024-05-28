@@ -423,9 +423,8 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
       
 # Změny
 ## 28.5.2024 - 0.9.6
-- [x] Pridány senzory:
-**sensor.pnd_production2consumptionfull** stejný jako předchozí, bez omezení na 100%
-**sensor.pnd_production2consumptionfloor** rezerva virtuální baterie, tj cokoliv co je nad 100% s minimem 0% pokud je poměr pod 100%
+- [x] Přidán senzor: sensor.pnd_production2consumptionfull - zobrazuje poměr mezi výrobou a spoetřebou, bez omezení na 100%
+- [x] Přidán senzor: sensor.pnd_production2consumptionfloor - např rezerva virtuální baterie, tj cokoliv co je nad 100% s minimem 0% pokud je poměr pod 100%
 
 ## 20.5.2024 - 0.9.5
 - [x] Lepší ošetření chybových stavů, kontroly interakce s portálem (např chybné heslo) [#16](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/16)
