@@ -148,8 +148,10 @@ pnd:
 7. do složky _apps_ nahrajte soubor [pnd.py](/pnd.py)
 8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
 
+** POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
+
 Při úspěšném chodu skriptu:
-* jsou vytvořeny 4 soubory ve složce /homeassistant/appdaemon/apps/pnd
+* jsou vytvořeny soubory ve složce /homeassistant/appdaemon/apps/pnd
 * je vypnut binární senzor pnd_running (pokud není tento senzor vypnut po cca 2 minutách, přejděte na [řešení problémů](#%C5%99e%C5%A1en%C3%AD-probl%C3%A9m%C5%AF-se-skriptem)
 
 ### Nastavení automatické aktualizace dat
