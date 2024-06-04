@@ -428,6 +428,9 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Distribuce a aktualizace přes HACS
       
 # Změny
+## 4.6.2024 - 0.9.7
+- [x] Oprava zaokrouhlování sensor.pnd_production2consumptionfull a sensor.pnd_production2consumptionfloor
+
 ## 28.5.2024 - 0.9.6
 - [x] Přidán senzor: sensor.pnd_production2consumptionfull - zobrazuje poměr mezi výrobou a spoetřebou, bez omezení na 100%
 - [x] Přidán senzor: sensor.pnd_production2consumptionfloor - např rezerva virtuální baterie, tj cokoliv co je nad 100% s minimem 0% pokud je poměr pod 100%. např: poměr je 60%, tento senzor bude 0%, poměr je 115%, tento senzor bude 15%
