@@ -249,6 +249,10 @@ entities:
     name: Výroba za Období
   - entity: sensor.pnd_production2consumption
     name: Využití VB
+  - entity: sensor.pnd_production2consumptionfull
+    name: Výroba/Spotřeba
+  - entity: sensor.pnd_production2consumptionfloor
+    name: Rezerva VB
 state_color: false
 title: Celkový přehled
 ```
