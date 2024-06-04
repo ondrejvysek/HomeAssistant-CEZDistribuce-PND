@@ -1,4 +1,4 @@
-ver = "0.9.6"
+ver = "0.9.7"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -705,7 +705,7 @@ class pnd(hass.Hass):
     data_consumption = pd.read_csv(self.download_folder + '/range-consumption.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
     data_production = pd.read_csv(self.download_folder + '/range-production.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
 
-    data_consumption.iloc[:, 0] = pd.to_datetime(data_consumption.iloc[:, 0], format="%d.%m.%Y %H:%M")
+    data_consumption.iloc[:, 0] = pd.to_datetime(data_consumption.iloc[:, 0], format="%d.%m.%Y")
     date_str = [dt.isoformat() for dt in data_consumption.iloc[:, 0]]
 
     consumption_str = data_consumption.iloc[:, 1].to_list()
@@ -726,8 +726,8 @@ class pnd(hass.Hass):
       "unit_of_measurement": "kWh"
     })
     percentage_diff = round((float(total_production) / float(total_consumption)) * 100, 2)
-    capped_percentage_diff = min(percentage_diff, 100)
-    floored_min_percentage_diff = max(percentage_diff - 100, 0)
+    capped_percentage_diff = round(min(percentage_diff, 100),2)
+    floored_min_percentage_diff = round(max(percentage_diff - 100, 0),2)
     self.set_state("sensor.pnd_production2consumption", state=capped_percentage_diff,attributes={
       "friendly_name": "PND Interval Production to Consumption Max",
       "device_class": "energy",
