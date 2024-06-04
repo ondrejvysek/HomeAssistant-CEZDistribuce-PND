@@ -1,0 +1,9 @@
+{
+    "name": "ČEZ Distribuce Portál Naměřených Dat",
+    "content_in_root": false,
+    "domains": ["appdaemon"],
+    "country": "CZ",
+    "homeassistant": "0.110.0",
+    "render_readme": true,
+    "zip_release": false  
+}
