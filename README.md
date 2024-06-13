@@ -168,7 +168,7 @@ Chod skriptu trvá cca 50vteřin, poté byste měli vidět odpovídající entit
 
 YAML kód automatizace
 ```
-alias: Run PDN
+alias: Run PND
 description: ""
 trigger:
   - platform: time
