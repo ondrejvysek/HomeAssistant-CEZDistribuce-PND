@@ -1,4 +1,4 @@
-ver = "0.9.7"
+ver = "0.9.8"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
