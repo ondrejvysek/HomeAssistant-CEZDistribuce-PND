@@ -725,7 +725,10 @@ class pnd(hass.Hass):
       "device_class": "energy",
       "unit_of_measurement": "kWh"
     })
-    percentage_diff = round((float(total_production) / float(total_consumption)) * 100, 2)
+    try:
+        percentage_diff = round((float(total_production) / float(total_consumption)) * 100, 2)
+    except:
+        percentage_diff = 0
     capped_percentage_diff = round(min(percentage_diff, 100),2)
     floored_min_percentage_diff = round(max(percentage_diff - 100, 0),2)
     self.set_state("sensor.pnd_production2consumption", state=capped_percentage_diff,attributes={
