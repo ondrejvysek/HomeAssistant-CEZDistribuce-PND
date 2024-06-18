@@ -1,4 +1,4 @@
-ver = "0.9.8"
+ver = "0.9.9"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -19,6 +19,32 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.action_chains import ActionChains
 from bs4 import BeautifulSoup
+import platform
+import subprocess
+
+def print_system_info():
+    print("System Information:")
+    print(f"Platform: {platform.system()}")
+    print(f"Platform Release: {platform.release()}")
+    print(f"Platform Version: {platform.version()}")
+    print(f"Architecture: {platform.machine()}")
+    print(f"Processor: {platform.processor()}")
+    print(f"Python Version: {platform.python_version()}")
+
+def print_installed_modules():
+    print("\nInstalled Python Modules:")
+    result = subprocess.run(['pip', 'list'], stdout=subprocess.PIPE, text=True)
+    print(result.stdout)
+def get_chromedriver_version():
+    try:
+        result = subprocess.run(['chromedriver', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode == 0:
+            version_info = result.stdout.strip()
+            print(f"ChromeDriver Version: {version_info}")
+        else:
+            print(f"Error: {result.stderr.strip()}")
+    except FileNotFoundError:
+        print("ChromeDriver is not installed or not found in the system PATH.")
 
 def wait_for_download(directory, timeout=30):
     seconds = 0
@@ -72,6 +98,9 @@ def zip_folder(folder_path, output_path):
 class pnd(hass.Hass):
   def initialize(self):
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": >>>>>>>>>>>> PND Initialize")
+    print_system_info()
+    print_installed_modules()
+    get_chromedriver_version()
     
     self.username = self.args["PNDUserName"] 
     self.password = self.args["PNDUserPassword"]
