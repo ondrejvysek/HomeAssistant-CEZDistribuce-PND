@@ -1,4 +1,7 @@
 # Home Assistant ČEZ Distribuce Portál Naměřených Dat
+
+:exclamation::exclamation::exclamation::exclamation::exclamation::exclamation: Stávající uživatelé pozor, 16.4.2024 byla vydána nová verze modulu Numpy, která není kompatibilní s aktuální verzí AppDaemon (resp Pandas). Do nastavení AppDaemon je nutné přidat modul `numpy==1.26.4` viz zde: https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/42#issuecomment-2174487719
+
 Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech
 
 Pokud se vám řešení líbí, můžete mne podpořit v další tvorbě a rozvoji - za což vám předem děkuji :)
