@@ -73,11 +73,12 @@ AppDaemon je volně spojené, vícevláknové, sandboxované prostředí pro spo
 2. Vyhledejte AppDaemon, zvolte jej a klikněte na "Nainstalovat". Instalace dle rychlosti vašeho HW a internetu je hotova do několika minut.
 3. Po instalaci přejděte do nastavení AppDaemon
    - v části "System Packages" přidejte _chromium-chromedriver_ a _chromium_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
-   - v části "Python packages" přidejte _selenium_, _pandas_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+   - v části "Python packages" přidejte _selenium_, _pandas_, numpy==1.26.4 a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
    - Klikněte na "Uložit". Konfigurace by měla odpovídat obrázku níže
 4. Spusťte doplněk AppDaemon
   
-![](/obrazky/04-appdaemon-config.png)
+![image](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/assets/29834082/532911a9-6625-48b2-a04b-4a4c7a7cd8af)
+
 
 ### Konfigurace prostředí AppDaemon
 1. V nastavení File editoru vypněte možnost "Enforce Basepath" a zvolte "Uložit" (doplněk se restartuje)
@@ -431,6 +432,12 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Distribuce a aktualizace přes HACS
       
 # Změny
+## 19.6.2024 - 0.9.9
+- [x] Oprava aktualizace s ohledem na novou verzi Numpy
+- [x] Doplněny detailní ladící informace do skriptu týkající se prostředí na čem AppDaemon běží, systémových a python modulů a verze chrome driver
+## 14.6.2024 - 0.9.8
+- [x] Oprava dělení nulou u procentuálních výpočtů
+
 ## 4.6.2024 - 0.9.7
 - [x] Oprava zaokrouhlování sensor.pnd_production2consumptionfull a sensor.pnd_production2consumptionfloor
 
