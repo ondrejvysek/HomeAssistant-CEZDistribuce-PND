@@ -1,4 +1,4 @@
-ver = "0.9.9"
+ver = "0.9.9:test"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -439,7 +439,13 @@ class pnd(hass.Hass):
             "friendly_name": "PND Script Status"
         })
     # Wait for the download to complete
-    downloaded_file = wait_for_download(self.download_folder)
+    time.sleep(5)
+    try:
+        del downloaded_file
+    except:
+        pass
+    #downloaded_file = wait_for_download(self.download_folder)
+    downloaded_file = os.path.join(self.download_folder, "pnd_export.csv")
     # Rename the file if it was downloaded
     if downloaded_file:
         new_filename = os.path.join(self.download_folder, "daily-consumption.csv")
@@ -488,6 +494,7 @@ class pnd(hass.Hass):
         csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
         csv_link.click()
+
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
         self.set_state("binary_sensor.pnd_running", state="off")
@@ -496,8 +503,14 @@ class pnd(hass.Hass):
             "friendly_name": "PND Script Status"
         })
     # Wait for the download to complete
-    downloaded_file = wait_for_download(self.download_folder)
+    time.sleep(5)
+    try:
+        del downloaded_file
+    except:
+        pass
+    #downloaded_file = wait_for_download(self.download_folder)
     # Rename the file if it was downloaded
+    downloaded_file = os.path.join(self.download_folder, "pnd_export.csv")
     if downloaded_file:
         new_filename = os.path.join(self.download_folder, "daily-production.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
