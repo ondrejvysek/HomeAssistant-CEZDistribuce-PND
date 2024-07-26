@@ -1,4 +1,4 @@
-ver = "0.9.9"
+ver = "0.9.9.1"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -219,14 +219,6 @@ class pnd(hass.Hass):
         "friendly_name": "PND Script Status"
         })            
         raise Exception(f"Unable to login to the app")
-
-    version_element = driver.find_element(By.XPATH, "//div[contains(text(), 'Verze aplikace:')]")
-    version_text = version_element.text
-    version_number = version_text.split(':')[1].strip()
-    self.set_state("sensor.pnd_app_version", state=version_number,attributes={
-      "friendly_name": "PND App Version",
-    })
-    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"App Version: {version_number}")
     body.screenshot(self.download_folder+"/01.png")
     # Print whether the H1 tag with the specified text is found
     if h1_element:
@@ -239,6 +231,36 @@ class pnd(hass.Hass):
             "friendly_name": "PND Script Status"
         })        
         raise Exception(f"Failed to find H1 tag with text '{h1_text}'")
+
+    # Check for Modal Dialog
+    try:
+        modal_dialog = driver.find_element(By.CLASS_NAME, "modal-dialog")
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.YELLOW}Modal Dialog found{Colors.RESET}")
+        # Close the modal dialog
+        try:
+            body.screenshot(self.download_folder+"/01-modal.png")
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.YELLOW}Closing Modal Dialog{Colors.RESET}")
+            close_button = modal_dialog.find_element(By.XPATH, ".//button[contains(@class, 'btn pnd-btn btn-primary') and contains(text(), 'Přečteno')]")
+            close_button.click()
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Modal Dialog closed successfully, reloading page{Colors.RESET}")
+            time.sleep(2)  # Allow time for the modal to close
+            # Reload the page after clicking the button
+            driver.refresh()
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Page reloaded successfully{Colors.RESET}")
+        except:
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Close button not found in the modal dialog.{Colors.RESET}")
+            raise Exception("Unable to click the close button in the modal dialog")
+    except:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Modal dialog not found. Continuing without closing modal.{Colors.RESET}")
+    time.sleep(2)  # Allow time for the page to load
+    # Get the app version
+    version_element = driver.find_element(By.XPATH, "//div[contains(text(), 'Verze aplikace:')]")
+    version_text = version_element.text
+    version_number = version_text.split(':')[1].strip()
+    self.set_state("sensor.pnd_app_version", state=version_number,attributes={
+      "friendly_name": "PND App Version",
+    })
+    print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"App Version: {version_number}")
 
     first_pnd_window = wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, ".pnd-window")))
     
@@ -439,7 +461,13 @@ class pnd(hass.Hass):
             "friendly_name": "PND Script Status"
         })
     # Wait for the download to complete
-    downloaded_file = wait_for_download(self.download_folder)
+    time.sleep(5)
+    try:
+        del downloaded_file
+    except:
+        pass
+    #downloaded_file = wait_for_download(self.download_folder)
+    downloaded_file = os.path.join(self.download_folder, "pnd_export.csv")
     # Rename the file if it was downloaded
     if downloaded_file:
         new_filename = os.path.join(self.download_folder, "daily-consumption.csv")
@@ -488,6 +516,7 @@ class pnd(hass.Hass):
         csv_link = wait.until(EC.element_to_be_clickable((By.XPATH, "//a[normalize-space()='CSV']")))
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"Downloading CSV file for {link_text}")
         csv_link.click()
+
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
         self.set_state("binary_sensor.pnd_running", state="off")
@@ -496,8 +525,14 @@ class pnd(hass.Hass):
             "friendly_name": "PND Script Status"
         })
     # Wait for the download to complete
-    downloaded_file = wait_for_download(self.download_folder)
+    time.sleep(5)
+    try:
+        del downloaded_file
+    except:
+        pass
+    #downloaded_file = wait_for_download(self.download_folder)
     # Rename the file if it was downloaded
+    downloaded_file = os.path.join(self.download_folder, "pnd_export.csv")
     if downloaded_file:
         new_filename = os.path.join(self.download_folder, "daily-production.csv")
         os.remove(new_filename) if os.path.exists(new_filename) else None
@@ -653,8 +688,13 @@ class pnd(hass.Hass):
             "friendly_name": "PND Script Status"
         })
     # Wait for the download to complete
-    downloaded_file = wait_for_download(self.download_folder)
-
+    time.sleep(5)
+    try:
+        del downloaded_file
+    except:
+        pass
+    #downloaded_file = wait_for_download(self.download_folder)
+    downloaded_file = os.path.join(self.download_folder, "pnd_export.csv")
     # Rename the file if it was downloaded
     if downloaded_file:
         new_filename = os.path.join(self.download_folder, "range-consumption.csv")
@@ -719,7 +759,13 @@ class pnd(hass.Hass):
             "friendly_name": "PND Script Status"
         })
     # Wait for the download to complete
-    downloaded_file = wait_for_download(self.download_folder)
+    time.sleep(5)
+    try:
+        del downloaded_file
+    except:
+        pass
+    #downloaded_file = wait_for_download(self.download_folder)
+    downloaded_file = os.path.join(self.download_folder, "pnd_export.csv")
 
     # Rename the file if it was downloaded
     if downloaded_file:
