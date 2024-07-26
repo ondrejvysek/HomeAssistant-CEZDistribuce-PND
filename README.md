@@ -433,7 +433,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
       
 # Změny
 ## 26.7.2024 - 0.9.9.1
-- [x] Vylepšené stahování souborů, již by se nemělo stávat, že datové soubory jsou stažené jako obrázky [#43]
+- [x] Vylepšené stahování souborů, již by se nemělo stávat, že datové soubory jsou stažené jako obrázky [#43](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/43)
 - [x] Detekce modálních oken portálu s upozorněním pro uživatele (obvykle info o nedostupnosti portálu), dojde k automatickému zavření okna a pokračování skriptu
 ## 19.6.2024 - 0.9.9
 - [x] Oprava aktualizace s ohledem na novou verzi Numpy
