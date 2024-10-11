@@ -1,4 +1,4 @@
-ver = "0.9.9.1"
+ver = "0.9.9.2"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -826,6 +826,7 @@ class pnd(hass.Hass):
 
 
     # Close the browser
+    driver.close()
     driver.quit()
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - BROWSER CLOSED")
     self.set_state("binary_sensor.pnd_running", state="off")
