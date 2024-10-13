@@ -345,7 +345,7 @@ type: custom:apexcharts-card
 stacked: true
 graph_span: 1y
 span:
-  end: week
+  end: isoWeek
 header:
   show: true
   title: PND Historická Data (Týdenní agregace)
@@ -388,7 +388,7 @@ type: custom:apexcharts-card
 stacked: true
 graph_span: 1y
 span:
-  end: day
+  end: month
 header:
   show: true
   title: PND Historická Data (Měsíční agregace)
