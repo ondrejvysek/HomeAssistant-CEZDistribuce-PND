@@ -432,6 +432,10 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Distribuce a aktualizace přes HACS
       
 # Změny
+## 13.10.2024 - 0.9.9.2
+- [x] Oprava ghost procesu chromedriver [#52](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/52) díky @waclaw66
+- [x] Oprava zarovnání grafů [#54](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/pull/54) díky @waclaw66
+
 ## 26.7.2024 - 0.9.9.1
 - [x] Vylepšené stahování souborů, již by se nemělo stávat, že datové soubory jsou stažené jako obrázky [#43](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/43)
 - [x] Detekce modálních oken portálu s upozorněním pro uživatele (obvykle info o nedostupnosti portálu), dojde k automatickému zavření okna a pokračování skriptu
