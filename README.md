@@ -149,7 +149,7 @@ pnd:
   DownloadFolder: "/homeassistant/appdaemon/apps/pnd"
 ```
 6. soubor uložte
-7. do složky _apps_ nahrajte soubor [pnd.py](https://raw.githubusercontent.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/refs/heads/main/pnd.py) - pozor, je nutné nahrát čistý skript, ideálně CTRL+C a CTRL+V ve FileDitoru.
+7. do složky _apps_ nahrajte soubor [pnd.py](https://raw.githubusercontent.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/refs/heads/main/pnd.py) - pozor, je nutné nahrát čistý skript, ideálně CTRL+C a CTRL+V ve FileEditoru.
 8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
 
 ** POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
