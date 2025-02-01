@@ -796,7 +796,7 @@ class pnd(hass.Hass):
     data_production = pd.read_csv(self.download_folder + '/range-production.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
 
     data_consumption.iloc[:, 0] = pd.to_datetime(data_consumption.iloc[:, 0], format="%d.%m.%Y")
-    date_str = [dt.isoformat() for dt in data_consumption.iloc[:, 0]]
+    date_str = [(dt - datetime.timedelta(days=1)).date().isoformat() for dt in data_consumption.iloc[:, 0]]
 
     consumption_str = data_consumption.iloc[:, 1].to_list()
     production_str = data_production.iloc[:, 1].to_list()
