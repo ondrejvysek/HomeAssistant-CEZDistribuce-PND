@@ -427,6 +427,16 @@ series:
     group_by:
       func: sum
       duration: 1month
+apex_config:
+  tooltip:
+    x:
+      formatter: |
+        EVAL: (value) => {
+          const date = new Date(value);
+          date.setDate(date.getDate() + 5);
+          const formatter = new Intl.DateTimeFormat(navigator.language, { year: 'numeric', month: 'long' });
+          return formatter.format(date);          
+        }
 ```
 ![](/obrazky/pnd-vsechnadata-mesicni.png)
 
