@@ -398,7 +398,10 @@ series:
     attribute: production
     data_generator: |
       return entity.attributes.pnddate.map((pnd, index) => {
-        return [new Date(pnd).getTime(), entity.attributes.production[index]];
+        const date = new Date(pnd);
+        date.setDate(1);
+        date.setHours(0, 0, 0, 0);      
+        return [date.getTime(), entity.attributes.production[index]];
       });
     color: var(--success-color)
     opacity: 0.8
@@ -412,7 +415,10 @@ series:
     attribute: consumption
     data_generator: |
       return entity.attributes.pnddate.map((pnd, index) => {
-        return [new Date(pnd).getTime(), entity.attributes.consumption[index]];
+        const date = new Date(pnd);
+        date.setDate(1);
+        date.setHours(0, 0, 0, 0);
+        return [date.getTime(), entity.attributes.consumption[index]];
       });
     color: var(--error-color)
     opacity: 0.8
