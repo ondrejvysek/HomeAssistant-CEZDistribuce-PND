@@ -448,6 +448,10 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Distribuce a aktualizace přes HACS
       
 # Změny
+
+## 2.2.2025 - 0.9.9.3
+- [x] Oprava časů v datech, aby seděly datumy [#61](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/pull/61), +omezení velikosti dat [#60](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/60) díky @waclaw66
+- [x] Aktualizace APEX charts pro zarovnání dat na konce měsíců [#62](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/pull/62) díky @waclaw66
 ## 13.10.2024 - 0.9.9.2
 - [x] Oprava ghost procesu chromedriver [#52](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/52) díky @waclaw66
 - [x] Oprava zarovnání grafů [#54](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/pull/54) díky @waclaw66
