@@ -389,6 +389,7 @@ stacked: true
 graph_span: 1y
 span:
   end: month
+  offset: "-1d"
 header:
   show: true
   title: PND Historická Data (Měsíční agregace)
