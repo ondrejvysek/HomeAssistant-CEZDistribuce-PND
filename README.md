@@ -399,7 +399,7 @@ series:
     data_generator: |
       return entity.attributes.pnddate.map((pnd, index) => {
         const date = new Date(pnd);
-        date.setDate(1);
+        date.setDate(2);
         date.setHours(0, 0, 0, 0);      
         return [date.getTime(), entity.attributes.production[index]];
       });
@@ -416,7 +416,7 @@ series:
     data_generator: |
       return entity.attributes.pnddate.map((pnd, index) => {
         const date = new Date(pnd);
-        date.setDate(1);
+        date.setDate(2);
         date.setHours(0, 0, 0, 0);
         return [date.getTime(), entity.attributes.consumption[index]];
       });
