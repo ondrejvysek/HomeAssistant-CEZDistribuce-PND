@@ -1,4 +1,4 @@
-ver = "0.9.9.3"
+ver = "0.9.9.4"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -109,6 +109,10 @@ def quit_driver(driver):
                 pass
     except ChildProcessError:
         pass
+
+def conv_date(s):
+    s = s.replace("24:00:00", "23:59:00")
+    return datetime.datetime.strptime(s, "%d.%m.%Y %H:%M:%S")
 
 class pnd(hass.Hass):
   def initialize(self):
@@ -557,7 +561,6 @@ class pnd(hass.Hass):
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
 
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - DAILY DATA DOWNLOADED")
-    date_format = "%d.%m.%Y %H:%M"
     data_consumption = pd.read_csv(self.download_folder + '/daily-consumption.csv', delimiter=';', encoding='latin1')
     latest_consumption_entry = data_consumption.iloc[-1]  # Get the last row, assuming the data is appended daily
     data_production = pd.read_csv(self.download_folder + '/daily-production.csv', delimiter=';', encoding='latin1')
@@ -565,12 +568,10 @@ class pnd(hass.Hass):
 
     # Extract date and consumption values
     date_consumption_str = latest_consumption_entry.iloc[0]
-    date_consumption_str = date_consumption_str.replace("00:00", "23:59")
-    date_consumption_obj = datetime.datetime.strptime(date_consumption_str, date_format)
+    date_consumption_obj = conv_date(date_consumption_str)
     yesterday_consumption = date_consumption_obj - datetime.timedelta(days=1)
     date_production_str = latest_production_entry.iloc[0]
-    date_production_str = date_production_str.replace("00:00", "23:59")
-    date_production_obj = datetime.datetime.strptime(date_production_str, date_format)
+    date_production_obj = conv_date(date_production_str)
     yesterday_production = date_production_obj - datetime.timedelta(days=1)
 
     consumption_value = latest_consumption_entry.iloc[1]
@@ -795,8 +796,8 @@ class pnd(hass.Hass):
     data_consumption = pd.read_csv(self.download_folder + '/range-consumption.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
     data_production = pd.read_csv(self.download_folder + '/range-production.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
 
-    data_consumption.iloc[:, 0] = pd.to_datetime(data_consumption.iloc[:, 0], format="%d.%m.%Y")
-    date_str = [(dt - datetime.timedelta(days=1)).date().isoformat() for dt in data_consumption.iloc[:, 0]]
+    data_consumption.iloc[:, 0] = data_consumption.iloc[:, 0].apply(lambda dt: conv_date(dt))
+    date_str = [dt.date().isoformat() for dt in data_consumption.iloc[:, 0]]
 
     consumption_str = data_consumption.iloc[:, 1].to_list()
     production_str = data_production.iloc[:, 1].to_list()
