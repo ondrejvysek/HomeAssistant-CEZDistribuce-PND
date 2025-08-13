@@ -1,4 +1,4 @@
-ver = "0.9.9.3"
+ver = "0.9.9.4"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -110,6 +110,10 @@ def quit_driver(driver):
     except ChildProcessError:
         pass
 
+def conv_date(s):
+    s = s.replace("24:00:00", "23:59:00")
+    return datetime.datetime.strptime(s, "%d.%m.%Y %H:%M:%S")
+
 class pnd(hass.Hass):
   def initialize(self):
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": >>>>>>>>>>>> PND Initialize")
@@ -122,8 +126,10 @@ class pnd(hass.Hass):
     self.download_folder = self.args["DownloadFolder"]
     self.datainterval = self.args["DataInterval"]
     self.ELM = self.args["ELM"]
-    self.entity_id_consumption = 'sensor.pnd_consumption'
-    self.entity_id_production = 'sensor.pnd_production'
+    self.id = self.args.get("id", "")
+    self.suffix = f"_{self.id}" if self.id else ""
+    self.entity_id_consumption = f"sensor.pnd_consumption{self.suffix}"
+    self.entity_id_production = f"sensor.pnd_production{self.suffix}"
     self.listen_event(self.run_pnd, "run_pnd")
 
   def terminate(self):
@@ -132,8 +138,8 @@ class pnd(hass.Hass):
   def run_pnd(self, event_name, data, kwargs):
     script_start_time = dt.now()
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + f": {Colors.CYAN}********************* Starting " +  ver + f" *********************{Colors.RESET}")
-    self.set_state("binary_sensor.pnd_running", state="on")
-    self.set_state("sensor.pnd_script_status", state="Running",attributes={
+    self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="on")
+    self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Running",attributes={
       "status": "OK",
       "friendly_name": "PND Script Status"
     })
@@ -161,8 +167,8 @@ class pnd(hass.Hass):
       print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Driver Loaded")
     except:
       print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to initialize Chrome Driver - exitting{Colors.RESET}")
-      self.set_state("binary_sensor.pnd_running", state="off")
-      self.set_state("sensor.pnd_script_status", state="Error",attributes={
+      self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+      self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error",attributes={
         "status": "ERROR: Nepodařilo se inicializovat Chrome Driver, zkontroluj nastavení AppDaemon",
         "friendly_name": "PND Script Status"
       })
@@ -174,8 +180,8 @@ class pnd(hass.Hass):
       print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Website Opened")
     except:
       print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to open website - exitting{Colors.RESET}")
-      self.set_state("binary_sensor.pnd_running", state="off")
-      self.set_state("sensor.pnd_script_status", state="Error",attributes={
+      self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+      self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
         "status": "ERROR: Nepodařilo se otevřít webovou stránku PND portálu",
         "friendly_name": "PND Script Status"
       })
@@ -188,8 +194,8 @@ class pnd(hass.Hass):
         cookie_banner_close_button.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "No cookie banner found")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": "ERROR: Nepodařilo se nalézt cookie banner, zkuste za chvíli znovu spustit skript.",
             "friendly_name": "PND Script Status"
         })
@@ -211,8 +217,8 @@ class pnd(hass.Hass):
         login_button.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to enter login details or find and click the login button{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": "ERROR: Nepodařilo se vyplnit přihlašovací údaje nebo najít a kliknout na tlačítko pro přihlášení",
             "friendly_name": "PND Script Status"
         })
@@ -229,7 +235,7 @@ class pnd(hass.Hass):
     except:
         alert_widget_content = driver.find_element(By.CLASS_NAME, "alertWidget__content").text
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: {alert_widget_content}{Colors.RESET}")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
         "status": "ERROR: Není možné se přihlásit do aplikace",
         "friendly_name": "PND Script Status"
         })
@@ -240,8 +246,8 @@ class pnd(hass.Hass):
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"H1 tag with text '{h1_text}' is present.")
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: H1 tag with text '{h1_text}' is not found.{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Text '{h1_text}' nebyl nalezen na stránce, zkuste skript spustit později znovu.",
             "friendly_name": "PND Script Status"
         })
@@ -272,7 +278,7 @@ class pnd(hass.Hass):
     version_element = driver.find_element(By.XPATH, "//div[contains(text(), 'Verze aplikace:')]")
     version_text = version_element.text
     version_number = version_text.split(':')[1].strip()
-    self.set_state("sensor.pnd_app_version", state=version_number,attributes={
+    self.set_state(f"sensor.pnd_app_version{self.suffix}", state=version_number, attributes={
       "friendly_name": "PND App Version",
     })
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"App Version: {version_number}")
@@ -309,8 +315,8 @@ class pnd(hass.Hass):
             continue
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Rychla Sestava neni mozne vybrat!{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": "ERROR: Nebylo možné vybrat 'Rychlá sestava' po 10 pokusech. Zkuste skript spustit později znovu.",
             "friendly_name": "PND Script Status"
         })
@@ -352,8 +358,8 @@ class pnd(hass.Hass):
             option = wait.until(EC.element_to_be_clickable((By.XPATH, f"//span[contains(text(), '{self.ELM}')]")))
         except:
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find '{self.ELM}' in the selection - check ELM attribute in the apps.yaml{Colors.RESET}")
-            self.set_state("binary_sensor.pnd_running", state="off")
-            self.set_state("sensor.pnd_script_status", state="Error",attributes={
+            self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+            self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
                 "status": f"ERROR: Nebylo možné najít '{self.ELM}' v nabídce. Zkontrolujte ELM atribut v nastavení aplikace.",
                 "friendly_name": "PND Script Status"
             })
@@ -383,8 +389,8 @@ class pnd(hass.Hass):
             print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.YELLOW}Iteration {i}: Vyhledat Button IS disabled{Colors.RESET}")
     else:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f" {Colors.RED}ERROR: Failed to find '{self.ELM}' after 10 attempts{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nebylo možné najít '{self.ELM}' po 10 pokusech. Zkontrolujte ELM atribut v nastavení aplikace.",
             "friendly_name": "PND Script Status"
         })
@@ -405,8 +411,8 @@ class pnd(hass.Hass):
         option_vcera.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to select 'Včera' in the dropdown{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": "ERROR: Nepodařilo se vybrat 'Včera' v nabídce",
             "friendly_name": "PND Script Status"
         })
@@ -419,8 +425,8 @@ class pnd(hass.Hass):
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.GREEN}Button 'Vyhledat data' clicked successfully!{Colors.RESET}")
     except Exception as e:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}Failed to find or click the 'Vyhledat data' button:{Colors.RESET}", str(e))
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": "ERROR: Nepodařilo se nalézt nebo kliknout na tlačítko 'Vyhledat data'",
             "friendly_name": "PND Script Status"
         })
@@ -452,8 +458,8 @@ class pnd(hass.Hass):
         body.screenshot(self.download_folder+"/daily-body-07c.png")
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se najít odkaz pro denní export {link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -470,8 +476,8 @@ class pnd(hass.Hass):
         csv_link.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro denní export {link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -515,8 +521,8 @@ class pnd(hass.Hass):
         body.screenshot(self.download_folder+"/daily-body-08c.png")
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se najít odkaz pro denní export {link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -534,8 +540,8 @@ class pnd(hass.Hass):
 
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro denní export{link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -557,7 +563,6 @@ class pnd(hass.Hass):
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED} ERROR: No file was downloaded for {link_text}{Colors.RESET}")
 
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - DAILY DATA DOWNLOADED")
-    date_format = "%d.%m.%Y %H:%M"
     data_consumption = pd.read_csv(self.download_folder + '/daily-consumption.csv', delimiter=';', encoding='latin1')
     latest_consumption_entry = data_consumption.iloc[-1]  # Get the last row, assuming the data is appended daily
     data_production = pd.read_csv(self.download_folder + '/daily-production.csv', delimiter=';', encoding='latin1')
@@ -565,12 +570,10 @@ class pnd(hass.Hass):
 
     # Extract date and consumption values
     date_consumption_str = latest_consumption_entry.iloc[0]
-    date_consumption_str = date_consumption_str.replace("00:00", "23:59")
-    date_consumption_obj = datetime.datetime.strptime(date_consumption_str, date_format)
+    date_consumption_obj = conv_date(date_consumption_str)
     yesterday_consumption = date_consumption_obj - datetime.timedelta(days=1)
     date_production_str = latest_production_entry.iloc[0]
-    date_production_str = date_production_str.replace("00:00", "23:59")
-    date_production_obj = datetime.datetime.strptime(date_production_str, date_format)
+    date_production_obj = conv_date(date_production_str)
     yesterday_production = date_production_obj - datetime.timedelta(days=1)
 
     consumption_value = latest_consumption_entry.iloc[1]
@@ -621,8 +624,8 @@ class pnd(hass.Hass):
         body.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to select 'Vlastní období' in the dropdown{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": "ERROR: Nepodařilo se vybrat 'Vlastní období' v nabídce",
             "friendly_name": "PND Script Status"
         })
@@ -642,8 +645,8 @@ class pnd(hass.Hass):
         body.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to click 'Tabulka dat' button{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": "ERROR: Nepodařilo se kliknout na tlačítko 'Tabulka dat'",
             "friendly_name": "PND Script Status"
         })
@@ -676,8 +679,8 @@ class pnd(hass.Hass):
         body.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se najít odkaz pro interval export {link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -697,8 +700,8 @@ class pnd(hass.Hass):
         csv_link.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro interval export {link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -749,8 +752,8 @@ class pnd(hass.Hass):
         body.screenshot(self.download_folder+"/interval-body-08c.png")
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to find link {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se najít odkaz pro interval export {link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -768,8 +771,8 @@ class pnd(hass.Hass):
         csv_link.click()
     except:
         print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Failed to download CSV file for {link_text}{Colors.RESET}")
-        self.set_state("binary_sensor.pnd_running", state="off")
-        self.set_state("sensor.pnd_script_status", state="Error",attributes={
+        self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+        self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error", attributes={
             "status": f"ERROR: Nepodařilo se stáhnout CSV soubor pro interval export {link_text}",
             "friendly_name": "PND Script Status"
         })
@@ -795,22 +798,22 @@ class pnd(hass.Hass):
     data_consumption = pd.read_csv(self.download_folder + '/range-consumption.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
     data_production = pd.read_csv(self.download_folder + '/range-production.csv', delimiter=';', encoding='latin1', parse_dates=[0],dayfirst=True)
 
-    data_consumption.iloc[:, 0] = pd.to_datetime(data_consumption.iloc[:, 0], format="%d.%m.%Y")
-    date_str = [(dt - datetime.timedelta(days=1)).date().isoformat() for dt in data_consumption.iloc[:, 0]]
+    data_consumption.iloc[:, 0] = data_consumption.iloc[:, 0].apply(lambda dt: conv_date(dt))
+    date_str = [dt.date().isoformat() for dt in data_consumption.iloc[:, 0]]
 
     consumption_str = data_consumption.iloc[:, 1].to_list()
     production_str = data_production.iloc[:, 1].to_list()
 
     now = dt.now()
-    self.set_state("sensor.pnd_data", state=now.strftime("%Y-%m-%d %H:%M:%S"), attributes={"pnddate": date_str, "consumption": consumption_str, "production": production_str})
+    self.set_state(f"sensor.pnd_data{self.suffix}", state=now.strftime("%Y-%m-%d %H:%M:%S"), attributes={"pnddate": date_str, "consumption": consumption_str, "production": production_str})
     total_consumption = "{:.2f}".format(data_consumption.iloc[:, 1].sum())
     total_production = "{:.2f}".format(data_production.iloc[:, 1].sum())
-    self.set_state("sensor.pnd_total_interval_consumption", state=total_consumption,attributes={
+    self.set_state(f"sensor.pnd_total_interval_consumption{self.suffix}", state=total_consumption,attributes={
       "friendly_name": "PND Total Interval Consumption",
       "device_class": "energy",
       "unit_of_measurement": "kWh"
     })
-    self.set_state("sensor.pnd_total_interval_production", state=total_production,attributes={
+    self.set_state(f"sensor.pnd_total_interval_production{self.suffix}", state=total_production,attributes={
       "friendly_name": "PND Total Interval Production",
       "device_class": "energy",
       "unit_of_measurement": "kWh"
@@ -821,17 +824,17 @@ class pnd(hass.Hass):
         percentage_diff = 0
     capped_percentage_diff = round(min(percentage_diff, 100),2)
     floored_min_percentage_diff = round(max(percentage_diff - 100, 0),2)
-    self.set_state("sensor.pnd_production2consumption", state=capped_percentage_diff,attributes={
+    self.set_state(f"sensor.pnd_production2consumption{self.suffix}", state=capped_percentage_diff,attributes={
       "friendly_name": "PND Interval Production to Consumption Max",
       "device_class": "energy",
       "unit_of_measurement": "%"
     })
-    self.set_state("sensor.pnd_production2consumptionfull", state=percentage_diff,attributes={
+    self.set_state(f"sensor.pnd_production2consumptionfull{self.suffix}", state=percentage_diff,attributes={
       "friendly_name": "PND Interval Production to Consumption Full",
       "device_class": "energy",
       "unit_of_measurement": "%"
     })
-    self.set_state("sensor.pnd_production2consumptionfloor", state=floored_min_percentage_diff,attributes={
+    self.set_state(f"sensor.pnd_production2consumptionfloor{self.suffix}", state=floored_min_percentage_diff,attributes={
       "friendly_name": "PND Interval Production to Consumption Floor",
       "device_class": "energy",
       "unit_of_measurement": "%"
@@ -843,17 +846,17 @@ class pnd(hass.Hass):
     # Close the browser
     quit_driver(driver)
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - BROWSER CLOSED")
-    self.set_state("binary_sensor.pnd_running", state="off")
+    self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Sensor State Set to OFF")
-    zip_folder("/homeassistant/appdaemon/apps/pnd", "/homeassistant/appdaemon/apps/debug.zip")
-    shutil.move("/homeassistant/appdaemon/apps/debug.zip", self.download_folder+"/debug.zip")
+    zip_folder(f"/homeassistant/appdaemon/apps/pnd{self.suffix}", f"/homeassistant/appdaemon/apps/debug{self.suffix}.zip")
+    shutil.move(f"/homeassistant/appdaemon/apps/debug{self.suffix}.zip", self.download_folder+"/debug.zip")
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "Debug Files Zipped")
     script_end_time = dt.now()
     script_duration = script_end_time - script_start_time
-    self.set_state("sensor.pnd_script_duration", state=script_duration,attributes={
+    self.set_state(f"sensor.pnd_script_duration{self.suffix}", state=script_duration,attributes={
       "friendly_name": "PND Script Duration",
     })
-    self.set_state("sensor.pnd_script_status", state="Stopped",attributes={
+    self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Stopped",attributes={
       "status": "Finished",
     })
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.CYAN}********************* Duration: {script_duration} *********************{Colors.RESET}")
