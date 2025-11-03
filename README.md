@@ -364,6 +364,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 
 ## 3.11.2025 - 0.9.9.8
  - [x] Oprava zápisu nulových hodnot do atributu, týká se především probíhajícího období (měsíce) a budoucnosti [#81](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/81). Pro správné fungování je nutné opravit také karty zobrazující měsíční / týdenní agregaci!
+ - [x] Oprava zápisu procentuálních hodnot - již to není typ Energy, který nepodporuje procenta
  - [x] Definice Apex karet pro měsíční a týdenní agregaci odebrána z tohoto návodu a přesunuta do vlastních .yaml souborů (*Zakladni.yaml obsahuje agregaci a formátování logikou Apex, *Rozsirene.yaml obsahuje vlastní agregace a formátování - vhodné pro agregace od 1. v měsíci)
 
 ## 3.10.2025 - 0.9.9.7
