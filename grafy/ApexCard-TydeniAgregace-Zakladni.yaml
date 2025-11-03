@@ -1,0 +1,37 @@
+type: custom:apexcharts-card
+stacked: true
+graph_span: 1y
+span:
+  end: isoWeek
+header:
+  show: true
+  title: PND Historická Data (Týdenní agregace)
+series:
+  - entity: sensor.pnd_data
+    name: Výroba
+    attribute: production
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), parseFloat(entity.attributes.production[index])];
+      });
+    color: var(--success-color)
+    opacity: 0.8
+    invert: false
+    type: column
+    group_by:
+      func: sum
+      duration: 7d
+  - entity: sensor.pnd_data
+    name: Spotřeba
+    attribute: consumption
+    data_generator: |
+      return entity.attributes.pnddate.map((pnd, index) => {
+        return [new Date(pnd).getTime(), parseFloat(entity.attributes.consumption[index])];
+      });
+    color: var(--error-color)
+    opacity: 0.8
+    invert: true
+    type: column
+    group_by:
+      func: sum
+      duration: 7d

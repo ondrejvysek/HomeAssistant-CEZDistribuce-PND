@@ -1,0 +1,99 @@
+type: custom:apexcharts-card
+stacked: true
+graph_span: 1y
+span:
+  end: week
+header:
+  show: true
+  title: PND Historická Data (Tydenní agregace)
+apex_config:
+  xaxis:
+    type: datetime
+  tooltip:
+    x:
+      formatter: |
+        EVAL:function(val) {
+          var d = new Date(val);
+
+          function isoWeek(dt){
+            var t = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate()));
+            var day = t.getUTCDay() || 7;
+            t.setUTCDate(t.getUTCDate() + 4 - day);
+            var y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+            return Math.ceil((((t - y0) / 86400000) + 1) / 7);
+          }
+
+          // zobraz i rozsah týdne
+          var start = new Date(d);
+          var dow = (start.getDay() + 6) % 7; // Po=0
+          start.setDate(start.getDate() - dow);
+          start.setHours(0,0,0,0);
+          var end = new Date(start);
+          end.setDate(end.getDate() + 6);
+
+          var fmt = new Intl.DateTimeFormat('cs-CZ', { day: '2-digit', month: 'short', year: '2-digit' });
+          return fmt.format(start) + ' – ' + fmt.format(end) + ' | Týden' + ' ' + isoWeek(d) + '';
+        }
+series:
+  - entity: sensor.pnd_data
+    name: Výroba
+    attribute: production
+    data_generator: >
+      const d = entity.attributes.pnddate;
+
+      const v = entity.attributes.production;
+
+      const sums = {};
+
+      function weekStartTs(ds) {
+        const t = new Date(ds + 'T00:00:00');
+        const dow = (t.getDay() + 6) % 7; // Po=0
+        t.setDate(t.getDate() - dow);
+        t.setHours(0,0,0,0);
+        return t.getTime();
+      }
+
+      for (let i = 0; i < Math.min(d.length, v.length); i++) {
+        const key = weekStartTs(d[i]);
+        const val = Number(v[i]);
+        if (!Number.isFinite(val)) continue;
+        sums[key] = (sums[key] || 0) + val;
+      }
+
+      return Object.keys(sums).map(k => [Number(k),
+      sums[k]]).sort((a,b)=>a[0]-b[0]);
+    color: var(--success-color)
+    opacity: 0.8
+    invert: false
+    type: column
+  - entity: sensor.pnd_data
+    name: Spotřeba
+    attribute: consumption
+    data_generator: >
+      const d = entity.attributes.pnddate;
+
+      const v = entity.attributes.consumption;
+
+      const sums = {};
+
+      function weekStartTs(ds) {
+        const t = new Date(ds + 'T00:00:00');
+        const dow = (t.getDay() + 6) % 7;
+        t.setDate(t.getDate() - dow);
+        t.setHours(0,0,0,0);
+        return t.getTime();
+      }
+
+      for (let i = 0; i < Math.min(d.length, v.length); i++) {
+        const key = weekStartTs(d[i]);
+        const val = Number(v[i]);
+        if (!Number.isFinite(val)) continue;
+        sums[key] = (sums[key] || 0) + val;
+      }
+
+      return Object.keys(sums).map(k => [Number(k),
+      sums[k]]).sort((a,b)=>a[0]-b[0]);
+    color: var(--error-color)
+    opacity: 0.8
+    invert: true
+    type: column

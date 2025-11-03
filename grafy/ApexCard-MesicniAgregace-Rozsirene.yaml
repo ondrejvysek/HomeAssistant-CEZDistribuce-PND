@@ -1,0 +1,75 @@
+type: custom:apexcharts-card
+stacked: true
+graph_span: 1y
+span:
+  end: week
+header:
+  show: true
+  title: PND Historická Data (Měsíční agregace)
+apex_config:
+  xaxis:
+    type: datetime
+    labels:
+      formatter: |
+        EVAL:function(value, ts) {
+          const d = new Date(ts || value);
+          return d.toLocaleDateString('cs-CZ', { month: 'short', year: 'numeric' });
+        }
+  tooltip:
+    x:
+      formatter: |
+        EVAL:function(val) {
+          const d = new Date(val);
+          return d.toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' });
+        }
+series:
+  - entity: sensor.pnd_data
+    name: Výroba
+    attribute: production
+    data_generator: |
+      const d = entity.attributes.pnddate;
+      const v = entity.attributes.production;
+      const sums = new Map();                          // 'YYYY-MM' -> sum
+      for (let i = 0; i < Math.min(d.length, v.length); i++) {
+        const t = new Date(d[i] + 'T00:00:00');
+        if (isNaN(t)) continue;
+        const key = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;
+        const val = Number(v[i]);
+        if (!Number.isFinite(val)) continue;
+        sums.set(key, (sums.get(key) ?? 0) + val);
+      }
+      return Array.from(sums.entries())
+        .map(([key, sum]) => {
+          const [y,m] = key.split('-').map(Number);
+          return [new Date(y, m-1, 1).getTime(), sum]; // 1. den měsíce
+        })
+        .sort((a,b) => a[0]-b[0]);
+    color: var(--success-color)
+    opacity: 0.8
+    invert: false
+    type: column
+  - entity: sensor.pnd_data
+    name: Spotřeba
+    attribute: consumption
+    data_generator: |
+      const d = entity.attributes.pnddate;
+      const v = entity.attributes.consumption;
+      const sums = new Map();
+      for (let i = 0; i < Math.min(d.length, v.length); i++) {
+        const t = new Date(d[i] + 'T00:00:00');
+        if (isNaN(t)) continue;
+        const key = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;
+        const val = Number(v[i]);
+        if (!Number.isFinite(val)) continue;
+        sums.set(key, (sums.get(key) ?? 0) + val);
+      }
+      return Array.from(sums.entries())
+        .map(([key, sum]) => {
+          const [y,m] = key.split('-').map(Number);
+          return [new Date(y, m-1, 1).getTime(), sum];
+        })
+        .sort((a,b) => a[0]-b[0]);
+    color: var(--error-color)
+    opacity: 0.8
+    invert: true
+    type: column

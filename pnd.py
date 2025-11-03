@@ -1,4 +1,4 @@
-ver = "0.9.9.7"
+ver = "0.9.9.8"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -825,8 +825,8 @@ class pnd(hass.Hass):
 
     date_str = [dt.date().isoformat() for dt in data_consumption.iloc[:, 0]]
 
-    consumption_str = data_consumption.iloc[:, 1].to_list()
-    production_str = data_production.iloc[:, 1].to_list()
+    consumption_str = [str(x) for x in data_consumption.iloc[:, 1].to_list()]
+    production_str = [str(x) for x in data_production.iloc[:, 1].to_list()]
 
     now = dt.now()
     self.set_state(f"sensor.pnd_data{self.suffix}", state=now.strftime("%Y-%m-%d %H:%M:%S"), attributes={"pnddate": date_str, "consumption": consumption_str, "production": production_str})
@@ -843,26 +843,41 @@ class pnd(hass.Hass):
       "unit_of_measurement": "kWh"
     })
     try:
-        percentage_diff = round((float(total_production) / float(total_consumption)) * 100, 2)
+        float_total_consumption = float(total_consumption)
+        float_total_production = float(total_production)
+        if float_total_consumption > 0:
+            percentage_diff = round((float_total_production / float_total_consumption) * 100, 2)
+        else:
+            percentage_diff = 0
     except:
         percentage_diff = 0
-    capped_percentage_diff = round(min(percentage_diff, 100),2)
-    floored_min_percentage_diff = round(max(percentage_diff - 100, 0),2)
-    self.set_state(f"sensor.pnd_production2consumption{self.suffix}", state=capped_percentage_diff,attributes={
+    
+    try:
+        capped_percentage_diff = round(min(float(percentage_diff), 100), 2)
+    except:
+        capped_percentage_diff = 0
+    
+    try:
+        floored_min_percentage_diff = round(max(float(percentage_diff) - 100, 0), 2)
+    except:
+        floored_min_percentage_diff = 0
+
+    # Convert values to strings before setting state
+    self.set_state_safe(f"sensor.pnd_production2consumption{self.suffix}", state=str(capped_percentage_diff), attributes={
       "friendly_name": "PND Interval Production to Consumption Max",
-      "device_class": "energy",
+      "state_class": "measurement",
       "unit_of_measurement": "%"
     })
-    self.set_state(f"sensor.pnd_production2consumptionfull{self.suffix}", state=percentage_diff,attributes={
+    self.set_state_safe(f"sensor.pnd_production2consumptionfull{self.suffix}", state=str(percentage_diff), attributes={
       "friendly_name": "PND Interval Production to Consumption Full",
-      "device_class": "energy",
+      "state_class": "measurement",
       "unit_of_measurement": "%"
     })
-    self.set_state(f"sensor.pnd_production2consumptionfloor{self.suffix}", state=floored_min_percentage_diff,attributes={
+    self.set_state_safe(f"sensor.pnd_production2consumptionfloor{self.suffix}", state=str(floored_min_percentage_diff), attributes={
       "friendly_name": "PND Interval Production to Consumption Floor",
-      "device_class": "energy",
+      "state_class": "measurement",
       "unit_of_measurement": "%"
-    })
+    }) 
     #----------------------------------------------
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + "All Done - INTERVAL DATA PROCESSED")
 
