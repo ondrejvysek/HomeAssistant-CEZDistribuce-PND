@@ -343,113 +343,28 @@ series:
 ### Všechna data výroby / spotřeby z intervalu, agregace po týdnech
 
 ```
-type: custom:apexcharts-card
-stacked: true
-graph_span: 1y
-span:
-  end: isoWeek
-header:
-  show: true
-  title: PND Historická Data (Týdenní agregace)
-series:
-  - entity: sensor.pnd_data
-    name: Výroba
-    attribute: production
-    data_generator: |
-      return entity.attributes.pnddate.map((pnd, index) => {
-        return [new Date(pnd).getTime(), entity.attributes.production[index]];
-      });
-    color: var(--success-color)
-    opacity: 0.8
-    invert: false
-    type: column
-    group_by:
-      func: sum
-      duration: 7d
-  - entity: sensor.pnd_data
-    name: Spotřeba
-    attribute: consumption
-    data_generator: |
-      return entity.attributes.pnddate.map((pnd, index) => {
-        return [new Date(pnd).getTime(), entity.attributes.consumption[index]];
-      });
-    color: var(--error-color)
-    opacity: 0.8
-    invert: true
-    type: column
-    group_by:
-      func: sum
-      duration: 7d
+viz /grafy/ApexCard-xxxxxxxx.yaml
 ```
 ![](/obrazky/pnd-vsechnadata-tydenni.png)
 
 ### Všechna data výroby / spotřeby z intervalu, agregace po měsících
 
 ```
-type: custom:apexcharts-card
-stacked: true
-graph_span: 1y
-span:
-  end: month
-header:
-  show: true
-  title: PND Historická Data (Měsíční agregace)
-series:
-  - entity: sensor.pnd_data
-    name: Výroba
-    attribute: production
-    data_generator: |
-      return entity.attributes.pnddate.map((pnd, index) => {
-        const date = new Date(pnd);
-        date.setDate(2);
-        date.setHours(0, 0, 0, 0);      
-        return [date.getTime(), entity.attributes.production[index]];
-      });
-    color: var(--success-color)
-    opacity: 0.8
-    invert: false
-    type: column
-    group_by:
-      func: sum
-      duration: 1month
-  - entity: sensor.pnd_data
-    name: Spotřeba
-    attribute: consumption
-    data_generator: |
-      return entity.attributes.pnddate.map((pnd, index) => {
-        const date = new Date(pnd);
-        date.setDate(2);
-        date.setHours(0, 0, 0, 0);
-        return [date.getTime(), entity.attributes.consumption[index]];
-      });
-    color: var(--error-color)
-    opacity: 0.8
-    invert: true
-    type: column
-    group_by:
-      func: sum
-      duration: 1month
-apex_config:
-  tooltip:
-    x:
-      formatter: |
-        EVAL: (value) => {
-          const date = new Date(value);
-          date.setDate(date.getDate() + 5);
-          const formatter = new Intl.DateTimeFormat(navigator.language, { year: 'numeric', month: 'long' });
-          return formatter.format(date);          
-        }
+viz /grafy/ApexCard-xxxxxxxx.yaml
 ```
 ![](/obrazky/pnd-vsechnadata-mesicni.png)
 
 # Plány a nápady
 Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde na GitHubu
 - [ ] Zpracování více EANů (Elektroměrů)
-- [ ] Uživatelské sestavy, které by obsahovaly VT/NT,...??
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
 - [ ] Distribuce a aktualizace přes HACS
       
 # Změny
+
+## 3.11.2025 - 0.9.9.8
+ - [x] Oprava zápisu nulových hodnot do atributu, týká se především probíhajícího období (měsíce) a budoucnosti [#81](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/81). Pro správné fungování je nutné opravit také karty zobrazující měsíční / týdenní agregaci!
+ - [x] Definice Apex karet pro měsíční a týdenní agregaci odebrána z tohoto návodu a přesunuta do vlastních .yaml souborů (*Zakladni.yaml obsahuje agregaci a formátování logikou Apex, *Rozsirene.yaml obsahuje vlastní agregace a formátování - vhodné pro agregace od 1. v měsíci)
 
 ## 3.10.2025 - 0.9.9.7
  - [x] Oprava způsobu přihlašování [#79](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/79)
