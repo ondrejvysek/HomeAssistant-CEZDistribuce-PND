@@ -1,10 +1,14 @@
 # Home Assistant ČEZ Distribuce Portál Naměřených Dat
 
-:exclamation::exclamation::exclamation: **1.10.2025 se změnila struktura přihlašování do PND** aktualizovaná verze 0.9.9.7 je aktualizovaná s ohledem na tyto změny :exclamation::exclamation::exclamation:
+🎉 **DŮLEŽITÉ: Byla vydána verze v1.0.0 s podporou HACS a automatickým sjednocením enginů Chrome a Firefox!** 🎉
+* **Stávající uživatelé:** Můžete si ponechat svou aktuální instalaci a aktualizovat ručně (překopírováním obsahu nového skriptu `pnd.py`). Mějte ale na paměti, že v tomto režimu HACS nebude hlídat ani instalovat budoucí aktualizace.
+* **Noví uživatelé:** Důrazně doporučujeme instalaci prostřednictvím HACS, který zajistí bezproblémové stahování i budoucí aktualizace skriptu.
 
- **Stávající uživatelé pozor**, 16.4.2024 byla vydána nová verze modulu Numpy, která není kompatibilní s aktuální verzí AppDaemon (resp Pandas). Do nastavení AppDaemon je nutné přidat modul `numpy==1.26.4` viz zde: https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/42#issuecomment-2174487719. Problém se projeví po restartu AppDaemon, tj např při aktualizaci HA. Pro nové instalace je dokumentace aktualizovaná
+:exclamation::exclamation::exclamation: **1.10.2025 se změnila struktura přihlašování do PND** aktualizovaná verze je upravená s ohledem na tyto změny :exclamation::exclamation::exclamation:
 
-Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech
+ **Stávající uživatelé pozor**, 16.4.2024 byla vydána nová verze modulu Numpy, která není kompatibilní s aktuální verzí AppDaemon (resp Pandas). Do nastavení AppDaemon je nutné přidat modul `numpy==1.26.4` viz zde: https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/42#issuecomment-2174487719. Problém se projeví po restartu AppDaemon, tj např při aktualizaci HA. Pro nové instalace je dokumentace aktualizovaná.
+
+Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech.
 
 Pokud se vám řešení líbí, můžete mne podpořit v další tvorbě a rozvoji - za což vám předem děkuji :)
 
