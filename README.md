@@ -41,11 +41,12 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
    - Script pro stažení dat
    - [Řešení problémů](#%C5%99e%C5%A1en%C3%AD-probl%C3%A9m%C5%AF-se-skriptem)
    - [Naplánování automatické aktualizace](#nastavení-automatické-aktualizace-dat)
-   - [HACS](#instalace-hacs)
+   - [HACS Instalace (Aplikace a PND Skript)](#instalace-hacs)
    - [ApexCharts Card](#instalace-apexcharts-card)
 3. [Tvorba Dashboardu](#tvorba-dashboardu)
-4. [Nápady a plány](#pl%C3%A1ny-a-n%C3%A1pady)
-5. [Změny (Changelog)](#změny)
+4. [Informace pro vývojáře/správce (HACS)](#informace-pro-vývojáře-a-správce-hacs)
+5. [Nápady a plány](#pl%C3%A1ny-a-n%C3%A1pady)
+6. [Změny (Changelog)](#změny)
 
 
 ## Distribuční portál
@@ -198,7 +199,21 @@ Pokud se vyskytne problém (např data se nestahují):
 * Postupoval jsem dle návodu, ale entity se neobjevily: Řešení - vytvořili jste automatizaci pro vyvolání události? Pokud ještě neuplynul čas do spuštění, spusťe automatizaci ručně
 
 ### Instalace HACS
-Postup instalalce je uvedený na [stránkách projektu](https://hacs.xyz/)
+Postup instalalce HACS do Home Assistant je uvedený na [stránkách projektu](https://hacs.xyz/).
+
+Jakmile máte HACS nainstalovaný, můžete tento PND skript do AppDaemon přidat přes HACS jako vlastní repozitář (Custom Repository):
+1. Otevřete HACS v Home Assistant.
+2. Přejděte do sekce **AppDaemon**.
+3. Vpravo nahoře klikněte na tři tečky a zvolte **Vlastní repozitáře (Custom repositories)**.
+4. Do pole "Repository" vložte URL tohoto repozitáře: `https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND`
+5. V poli "Category" vyberte **AppDaemon**.
+6. Klikněte na "Add" (Přidat).
+7. Nyní najdete "CEZ Distribuce PND" v seznamu AppDaemon aplikací v HACS. Klikněte na něj a dejte "Download" (Stáhnout).
+   *(HACS automaticky stáhne nejnovější verzi a umístí ji do vaší složky `apps/pnd/` pro AppDaemon)*
+8. Dále musíte nakonfigurovat `apps.yaml` podle kroků popsaných [výše v části "Vytvoření aplikace PND v AppDaemon"](#vytvoření-aplikace-pnd-v-appdaemon). Následné aktualizace skriptu `pnd.py` už bude hlídat a stahovat HACS.
+
+**Jak HACS kontroluje aktualizace:**
+HACS automaticky na pozadí kontroluje nové verze (GitHub Releases). Pokud autor vydá novou verzi, HACS vám ukáže dostupnou aktualizaci podobně jako u jiných Home Assistant integrací a umožní vám ji jedním kliknutím stáhnout.
 
 ### Instalace ApexCharts Card
 Postup instalace je uvedený na [stránkách projektu](https://github.com/RomRider/apexcharts-card)
@@ -354,11 +369,17 @@ viz /grafy/ApexCard-xxxxxxxx.yaml
 ```
 ![](/obrazky/pnd-vsechnadata-mesicni.png)
 
+## Informace pro vývojáře a správce (HACS)
+Jelikož je nyní tento repozitář kompatibilní s HACS, pro publikování nových verzí je nutné dodržovat standardní GitHub Releases:
+1. **Nová verze (Release):** Když provedete změny ve skriptu (`apps/pnd/pnd.py`), musíte na GitHubu vytvořit nový **Tag** (např. `v0.9.9.9`) a publikovat ho jako **Release**.
+2. **Aktualizace HACS:** HACS si u uživatelů všimne nového Release tagu a nabídne jim automatickou aktualizaci.
+3. **hacs.json:** Soubor `hacs.json` v kořeni repozitáře slouží jako manifest (obsahuje název aplikace). Obvykle jej nemusíte upravovat, ledaže byste chtěli změnit název, přidat kompatibilitu minimálních verzí atd. HACS si vždy bere verzi primárně podle názvu GitHub Release Tagu.
+
 # Plány a nápady
 Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde na GitHubu
 - [ ] Zpracování více EANů (Elektroměrů)
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
-- [ ] Distribuce a aktualizace přes HACS
+- [x] Distribuce a aktualizace přes HACS
       
 # Změny
 
