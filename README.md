@@ -202,13 +202,14 @@ Pokud se vyskytne problém (např data se nestahují):
 ### Instalace HACS
 Postup instalalce HACS do Home Assistant je uvedený na [stránkách projektu](https://hacs.xyz/).
 
-**DŮLEŽITÉ: Povolení AppDaemon v HACS**
-Aplikace AppDaemon nejsou v HACS vidět ve výchozím stavu a musí se nejprve zapnout v nastavení. Postupujte takto:
-1. V Home Assistant otevřete **Nastavení (Settings) > Zařízení a služby (Devices & services)**.
-2. Vyhledejte integraci **HACS** a klikněte na ni.
-3. Klikněte na **Konfigurovat (Configure)**.
-4. Zaškrtněte možnost **Enable AppDaemon apps discovery & tracking**.
-5. Klikněte na **Potvrdit (Submit)**.
+> [!CAUTION]
+> **DŮLEŽITÉ: Povolení AppDaemon v HACS**
+> Aplikace AppDaemon nejsou v HACS vidět ve výchozím stavu a musí se nejprve zapnout v nastavení. Postupujte takto:
+> 1. V Home Assistant otevřete **Nastavení (Settings) > Zařízení a služby (Devices & services)**.
+> 2. Vyhledejte integraci **HACS** a klikněte na ni.
+> 3. Klikněte na **Konfigurovat (Configure)**.
+> 4. Zaškrtněte možnost **Enable AppDaemon apps discovery & tracking**.
+> 5. Klikněte na **Potvrdit (Submit)**.
 
 Jakmile máte AppDaemon v HACS povolený, můžete tento PND skript přidat jako vlastní repozitář (Custom Repository):
 1. Otevřete HACS v Home Assistant.
@@ -217,12 +218,14 @@ Jakmile máte AppDaemon v HACS povolený, můžete tento PND skript přidat jako
 4. Do pole "Repository" vložte URL tohoto repozitáře: `https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND`
 5. V poli "Category" vyberte **AppDaemon** (pokud se AppDaemon v nabídce neukazuje, ujistěte se, že jste splnili kroky k jeho povolení výše).
 6. Klikněte na "Add" (Přidat).
-7. Nyní najdete "CEZ Distribuce PND" v seznamu AppDaemon aplikací v HACS. Klikněte na něj a dejte "Download" (Stáhnout).
-   *(HACS automaticky stáhne nejnovější verzi a umístí ji do vaší složky `apps/pnd/` pro AppDaemon)*
+7. Nyní najdete "CEZ Distribuce PND" v seznamu AppDaemon aplikací v HACS. Klikněte na něj a dejte "Download" (Stáhnout). *(HACS automaticky stáhne nejnovější verzi do složky /homeassistant/appdaemon/apps/HACS-CEZ-PND/)*
 8. Dále musíte nakonfigurovat `apps.yaml` podle kroků popsaných [výše v části "Vytvoření aplikace PND v AppDaemon"](#vytvoření-aplikace-pnd-v-appdaemon). Následné aktualizace skriptu `pnd.py` už bude hlídat a stahovat HACS.
 
 **Jak HACS kontroluje aktualizace:**
 HACS automaticky na pozadí kontroluje nové verze (GitHub Releases). Pokud autor vydá novou verzi, HACS vám ukáže dostupnou aktualizaci podobně jako u jiných Home Assistant integrací a umožní vám ji jedním kliknutím stáhnout.
+
+> [!CAUTION]
+> AppDaemon nemusí detekovat novou verzi po aktualizaci, doporučuji po aktualizaci ručně restartovat AppDaemon
 
 ### Instalace ApexCharts Card
 Postup instalace je uvedený na [stránkách projektu](https://github.com/RomRider/apexcharts-card)
@@ -387,7 +390,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
       
 # Změny
 
-## Verze 18.4.2026 v1.0.0
+## 18.4.2026 v1.0.0
  - [x] Sjednocení enginů - podpora automatického přepnutí z Google Chrome na Mozilla Firefox v případě pádu či chybějícího ovladače.
  - [x] Úprava struktury projektu pro plnou kompatibilitu a možnost aktualizací přes repozitář aplikací HACS.
  - [x] Odstraněna závislost na starší verzi numpy (již není nutné specifikovat `numpy==1.26.4`, skript funguje s nejnovější verzí).
