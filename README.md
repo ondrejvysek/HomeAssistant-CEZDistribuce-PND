@@ -1,10 +1,11 @@
 # Home Assistant ČEZ Distribuce Portál Naměřených Dat
 
-:exclamation::exclamation::exclamation: **1.10.2025 se změnila struktura přihlašování do PND** aktualizovaná verze 0.9.9.7 je aktualizovaná s ohledem na tyto změny :exclamation::exclamation::exclamation:
+> [!IMPORTANT]
+> 🎉 **DŮLEŽITÉ: Byla vydána verze v1.0.0 s podporou HACS a automatickým sjednocením enginů Chrome a Firefox!** 🎉
+> * **Stávající uživatelé:** Můžete si ponechat svou aktuální instalaci a aktualizovat ručně (překopírováním obsahu nového skriptu `pnd.py` - poroz, zde v repo je umístěný /apps/pnd/pnd.py, nikoliv v kořeni repo). Mějte ale na paměti, že v tomto režimu HACS nebude hlídat ani instalovat budoucí aktualizace. Doporučuji migraci na HACS - staačí odstranit původní pnd.py a provést instalaci přes HACS. Konfigurace,... je zachována.
+> * **Noví uživatelé:** Důrazně doporučujeme instalaci prostřednictvím HACS, který zajistí bezproblémové stahování i budoucí aktualizace skriptu.
 
- **Stávající uživatelé pozor**, 16.4.2024 byla vydána nová verze modulu Numpy, která není kompatibilní s aktuální verzí AppDaemon (resp Pandas). Do nastavení AppDaemon je nutné přidat modul `numpy==1.26.4` viz zde: https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/42#issuecomment-2174487719. Problém se projeví po restartu AppDaemon, tj např při aktualizaci HA. Pro nové instalace je dokumentace aktualizovaná
-
-Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech
+Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech.
 
 Pokud se vám řešení líbí, můžete mne podpořit v další tvorbě a rozvoji - za což vám předem děkuji :)
 
@@ -31,7 +32,8 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
 
 ![](/obrazky/00-prehled.png)
 
-**POZOR: Pokud již používáte AppDaemon nebo máte ve svém HA výše uvedené entity, návod je potřeba odpovídajícím způsobem upravit, abyste zachovali to co již používáte. Takové úpravy nejsou v návodu uvedeny.**
+> [!CAUTION]
+> **POZOR: Pokud již používáte AppDaemon nebo máte ve svém HA výše uvedené entity, návod je potřeba odpovídajícím způsobem upravit, abyste zachovali to co již používáte. Takové úpravy nejsou v návodu uvedeny.**
 
 ## Co je potřeba
 1. Přihlášení do Distribučního Portálu
@@ -41,7 +43,7 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
    - Script pro stažení dat
    - [Řešení problémů](#%C5%99e%C5%A1en%C3%AD-probl%C3%A9m%C5%AF-se-skriptem)
    - [Naplánování automatické aktualizace](#nastavení-automatické-aktualizace-dat)
-   - [HACS](#instalace-hacs)
+   - [HACS Instalace (Aplikace a PND Skript)](#instalace-hacs)
    - [ApexCharts Card](#instalace-apexcharts-card)
 3. [Tvorba Dashboardu](#tvorba-dashboardu)
 4. [Nápady a plány](#pl%C3%A1ny-a-n%C3%A1pady)
@@ -73,13 +75,14 @@ AppDaemon je volně spojené, vícevláknové, sandboxované prostředí pro spo
 ### Instalace a nastavení AppDaemon
 1. V nastavení HA zvolte "Doplňky" a dále pak "Obchod s doplňky"
 2. Vyhledejte AppDaemon, zvolte jej a klikněte na "Nainstalovat". Instalace dle rychlosti vašeho HW a internetu je hotova do několika minut.
-3. Po instalaci přejděte do nastavení AppDaemon
-   - v části "System Packages" přidejte _chromium-chromedriver_ a _chromium_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
-   - v části "Python packages" přidejte _selenium_, _pandas_, _numpy==1.26.4_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
-   - Klikněte na "Uložit". Konfigurace by měla odpovídat obrázku níže
+3. Po instalaci přejděte do nastavení AppDaemon. Skript podporuje Chrome i Firefox. Důrazně doporučujeme nainstalovat oba prohlížeče! Pokud po aktualizaci doplňku Chrome přestane fungovat (což se občas stává), skript se automaticky pokusí přepnout na Firefox, aby stahování dat nebylo přerušeno.
+   - v části "System Packages" přidejte:
+     - pro Chrome: `chromium-chromedriver` a `chromium`
+     - pro Firefox: `firefox`, `geckodriver`, `fontconfig`, `ttf-freefont`, `dbus`
+     *Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně*
+   - v části "Python packages" přidejte _selenium_, _pandas_, _numpy_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+   - Klikněte na "Uložit".
 4. Spusťte doplněk AppDaemon
-  
-![image](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/assets/29834082/532911a9-6625-48b2-a04b-4a4c7a7cd8af)
 
 
 ### Konfigurace prostředí AppDaemon
@@ -154,7 +157,8 @@ pnd:
 7. do složky _apps_ nahrajte soubor [pnd.py](https://raw.githubusercontent.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/refs/heads/main/pnd.py) - pozor, je nutné nahrát čistý skript, ideálně CTRL+C a CTRL+V ve FileEditoru.
 8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
 
-** POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
+> [!CAUTION]
+> **POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
 
 Při úspěšném chodu skriptu:
 * jsou vytvořeny soubory ve složce /homeassistant/appdaemon/apps/pnd
@@ -198,7 +202,32 @@ Pokud se vyskytne problém (např data se nestahují):
 * Postupoval jsem dle návodu, ale entity se neobjevily: Řešení - vytvořili jste automatizaci pro vyvolání události? Pokud ještě neuplynul čas do spuštění, spusťe automatizaci ručně
 
 ### Instalace HACS
-Postup instalalce je uvedený na [stránkách projektu](https://hacs.xyz/)
+Postup instalalce HACS do Home Assistant je uvedený na [stránkách projektu](https://hacs.xyz/).
+
+> [!WARNING]
+> **DŮLEŽITÉ: Povolení AppDaemon v HACS**
+> Aplikace AppDaemon nejsou v HACS vidět ve výchozím stavu a musí se nejprve zapnout v nastavení. Postupujte takto:
+> 1. V Home Assistant otevřete **Nastavení (Settings) > Zařízení a služby (Devices & services)**.
+> 2. Vyhledejte integraci **HACS** a klikněte na ni.
+> 3. Klikněte na **Konfigurovat (Configure)**.
+> 4. Zaškrtněte možnost **Enable AppDaemon apps discovery & tracking**.
+> 5. Klikněte na **Potvrdit (Submit)**.
+
+Jakmile máte AppDaemon v HACS povolený, můžete tento PND skript přidat jako vlastní repozitář (Custom Repository):
+1. Otevřete HACS v Home Assistant.
+2. Přejděte do sekce **AppDaemon**.
+3. Vpravo nahoře klikněte na tři tečky a zvolte **Vlastní repozitáře (Custom repositories)**.
+4. Do pole "Repository" vložte URL tohoto repozitáře: `https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND`
+5. V poli "Category" vyberte **AppDaemon** (pokud se AppDaemon v nabídce neukazuje, ujistěte se, že jste splnili kroky k jeho povolení výše).
+6. Klikněte na "Add" (Přidat).
+7. Nyní najdete "CEZ Distribuce PND" v seznamu AppDaemon aplikací v HACS. Klikněte na něj a dejte "Download" (Stáhnout). *(HACS automaticky stáhne nejnovější verzi do složky /homeassistant/appdaemon/apps/HACS-CEZ-PND/)*
+8. Dále musíte nakonfigurovat `apps.yaml` podle kroků popsaných [výše v části "Vytvoření aplikace PND v AppDaemon"](#vytvoření-aplikace-pnd-v-appdaemon). Následné aktualizace skriptu `pnd.py` už bude hlídat a stahovat HACS.
+
+**Jak HACS kontroluje aktualizace:**
+HACS automaticky na pozadí kontroluje nové verze (GitHub Releases). Pokud autor vydá novou verzi, HACS vám ukáže dostupnou aktualizaci podobně jako u jiných Home Assistant integrací a umožní vám ji jedním kliknutím stáhnout.
+
+> [!CAUTION]
+> AppDaemon nemusí detekovat novou verzi po aktualizaci, doporučuji po aktualizaci ručně restartovat AppDaemon
 
 ### Instalace ApexCharts Card
 Postup instalace je uvedený na [stránkách projektu](https://github.com/RomRider/apexcharts-card)
@@ -358,9 +387,15 @@ viz /grafy/ApexCard-xxxxxxxx.yaml
 Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde na GitHubu
 - [ ] Zpracování více EANů (Elektroměrů)
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
-- [ ] Distribuce a aktualizace přes HACS
+- [x] Distribuce a aktualizace přes HACS
+- [ ] Refactor některých částí pro stabilitu při timeoutech, bezpečnost a kvalitu kódu
       
 # Změny
+
+## 18.4.2026 v1.0.0
+ - [x] Sjednocení enginů - podpora automatického přepnutí z Google Chrome na Mozilla Firefox v případě pádu či chybějícího ovladače.
+ - [x] Úprava struktury projektu pro plnou kompatibilitu a možnost aktualizací přes repozitář aplikací HACS.
+ - [x] Odstraněna závislost na starší verzi numpy (již není nutné specifikovat `numpy==1.26.4`, skript funguje s nejnovější verzí).
 
 ## 3.11.2025 - 0.9.9.8
  - [x] Oprava zápisu nulových hodnot do atributu, týká se především probíhajícího období (měsíce) a budoucnosti [#81](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/81). Pro správné fungování je nutné opravit také karty zobrazující měsíční / týdenní agregaci!

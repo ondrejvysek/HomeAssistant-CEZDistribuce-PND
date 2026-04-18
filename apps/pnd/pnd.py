@@ -1,4 +1,4 @@
-ver = "0.9.9.8"
+ver = "v1.0.0"
 import appdaemon.plugins.hass.hassapi as hass
 import time
 import datetime
@@ -10,9 +10,11 @@ import zipfile
 import shutil
 from datetime import datetime as dt
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -47,6 +49,18 @@ def get_chromedriver_version():
     except FileNotFoundError:
         print("ChromeDriver is not installed or not found in the system PATH.")
 
+def get_geckodriver_version():
+    try:
+        result = subprocess.run(['geckodriver', '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if result.returncode == 0:
+            # GeckoDriver prints multiple lines, so we just grab the first one
+            version_info = result.stdout.split('\n')[0].strip()
+            print(f"GeckoDriver Version: {version_info}")
+        else:
+            print(f"Error: {result.stderr.strip()}")
+    except FileNotFoundError:
+        print("GeckoDriver is not installed or not found in the system PATH.")
+
 def wait_for_download(directory, timeout=30):
     seconds = 0
     dl_wait = True
@@ -54,7 +68,7 @@ def wait_for_download(directory, timeout=30):
         time.sleep(1)
         files = sorted([os.path.join(directory, f) for f in os.listdir(directory)], key=os.path.getmtime)
         # Filter out incomplete downloads
-        files = [f for f in files if not f.endswith('.crdownload')]
+        files = [f for f in files if not f.endswith('.crdownload') and not f.endswith('.part')]
         if files:
             dl_wait = False
         seconds += 1
@@ -131,6 +145,7 @@ class pnd(hass.Hass):
     print_system_info()
     print_installed_modules()
     get_chromedriver_version()
+    get_geckodriver_version()
 
     self.username = self.args["PNDUserName"]
     self.password = self.args["PNDUserPassword"]
@@ -161,32 +176,53 @@ class pnd(hass.Hass):
     print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Hello from AppDaemon for Portal Namerenych Dat")
     delete_folder_contents(self.download_folder+"/")
     os.makedirs(self.download_folder, exist_ok=True)
-    chrome_options = Options()
-    chrome_options.add_experimental_option("prefs", {
-        "download.default_directory": self.download_folder,  # Set download folder
-        "download.prompt_for_download": False,          # Disable download prompt
-        "download.directory_upgrade": True,             # Manage download directory
-        "plugins.always_open_pdf_externally": False      # Automatically open PDFs
-    })
-    chrome_options.add_argument('--headless')
-    chrome_options.add_argument('--no-sandbox')
-    chrome_options.add_argument('--disable-gpu')
-    chrome_options.add_argument('--disable-dev-shm-usage')
-    chrome_options.add_argument("--log-level=3")  # Disable logging
-    #load service
-    service = Service('/usr/bin/chromedriver')
-    #load driver
+
+    driver = None
+
+    # Try loading Chrome First
     try:
-      driver = webdriver.Chrome(service=service, options=chrome_options)
-      print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Driver Loaded")
-    except:
-      print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to initialize Chrome Driver - exitting{Colors.RESET}")
-      self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
-      self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error",attributes={
-        "status": "ERROR: Nepodařilo se inicializovat Chrome Driver, zkontroluj nastavení AppDaemon",
-        "friendly_name": "PND Script Status"
-      })
-      raise Exception("Unable to initialize Chrome Driver - exitting")
+        chrome_options = ChromeOptions()
+        chrome_options.add_experimental_option("prefs", {
+            "download.default_directory": self.download_folder,  # Set download folder
+            "download.prompt_for_download": False,          # Disable download prompt
+            "download.directory_upgrade": True,             # Manage download directory
+            "plugins.always_open_pdf_externally": False      # Automatically open PDFs
+        })
+        chrome_options.add_argument('--headless')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument("--log-level=3")  # Disable logging
+
+        #load service
+        chrome_service = ChromeService('/usr/bin/chromedriver')
+        driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Chrome Driver Loaded Successfully")
+    except Exception as chrome_ex:
+        print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.YELLOW}Chrome driver failed to load: {chrome_ex}. Attempting Firefox...{Colors.RESET}")
+
+        # Fallback to Firefox
+        try:
+            firefox_options = FirefoxOptions()
+            firefox_options.add_argument("--headless")
+            firefox_options.set_preference("browser.download.folderList", 2)
+            firefox_options.set_preference("browser.download.dir", self.download_folder)
+            firefox_options.set_preference("browser.download.manager.showWhenStarting", False)
+            firefox_options.set_preference("browser.helperApps.neverAsk.saveToDisk", "application/pdf,application/zip,text/csv,application/vnd.ms-excel")
+            firefox_options.set_preference("pdfjs.disabled", True)
+
+            firefox_service = FirefoxService('/usr/bin/geckodriver')
+            driver = webdriver.Firefox(service=firefox_service, options=firefox_options)
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": Firefox Driver Loaded Successfully")
+        except Exception as firefox_ex:
+            print(dt.now().strftime("%Y-%m-%d %H:%M:%S") + ": " + f"{Colors.RED}ERROR: Unable to initialize both Chrome and Firefox Drivers - exiting{Colors.RESET}")
+            self.set_state(f"binary_sensor.pnd_running{self.suffix}", state="off")
+            self.set_state(f"sensor.pnd_script_status{self.suffix}", state="Error",attributes={
+              "status": "ERROR: Nepodařilo se inicializovat Chrome ani Firefox Driver, zkontroluj nastavení AppDaemon",
+              "friendly_name": "PND Script Status"
+            })
+            raise Exception("Unable to initialize Chrome or Firefox Driver - exiting")
+
     # Open a website
     driver.set_window_size(1920, 1080)
     try:
