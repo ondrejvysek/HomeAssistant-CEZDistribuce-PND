@@ -44,9 +44,8 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
    - [HACS Instalace (Aplikace a PND Skript)](#instalace-hacs)
    - [ApexCharts Card](#instalace-apexcharts-card)
 3. [Tvorba Dashboardu](#tvorba-dashboardu)
-4. [Informace pro vývojáře/správce (HACS)](#informace-pro-vývojáře-a-správce-hacs)
-5. [Nápady a plány](#pl%C3%A1ny-a-n%C3%A1pady)
-6. [Změny (Changelog)](#změny)
+4. [Nápady a plány](#pl%C3%A1ny-a-n%C3%A1pady)
+5. [Změny (Changelog)](#změny)
 
 
 ## Distribuční portál
@@ -74,13 +73,14 @@ AppDaemon je volně spojené, vícevláknové, sandboxované prostředí pro spo
 ### Instalace a nastavení AppDaemon
 1. V nastavení HA zvolte "Doplňky" a dále pak "Obchod s doplňky"
 2. Vyhledejte AppDaemon, zvolte jej a klikněte na "Nainstalovat". Instalace dle rychlosti vašeho HW a internetu je hotova do několika minut.
-3. Po instalaci přejděte do nastavení AppDaemon
-   - v části "System Packages" přidejte _chromium-chromedriver_ a _chromium_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+3. Po instalaci přejděte do nastavení AppDaemon. Skript podporuje Chrome i Firefox. Důrazně doporučujeme nainstalovat oba prohlížeče! Pokud po aktualizaci doplňku Chrome přestane fungovat (což se občas stává), skript se automaticky pokusí přepnout na Firefox, aby stahování dat nebylo přerušeno.
+   - v části "System Packages" přidejte:
+     - pro Chrome: `chromium-chromedriver` a `chromium`
+     - pro Firefox: `firefox`, `geckodriver`, `fontconfig`, `ttf-freefont`, `dbus`
+     *Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně*
    - v části "Python packages" přidejte _selenium_, _pandas_, _numpy==1.26.4_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
-   - Klikněte na "Uložit". Konfigurace by měla odpovídat obrázku níže
+   - Klikněte na "Uložit".
 4. Spusťte doplněk AppDaemon
-  
-![image](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/assets/29834082/532911a9-6625-48b2-a04b-4a4c7a7cd8af)
 
 
 ### Konfigurace prostředí AppDaemon
@@ -369,12 +369,6 @@ viz /grafy/ApexCard-xxxxxxxx.yaml
 ```
 ![](/obrazky/pnd-vsechnadata-mesicni.png)
 
-## Informace pro vývojáře a správce (HACS)
-Jelikož je nyní tento repozitář kompatibilní s HACS, pro publikování nových verzí je nutné dodržovat standardní GitHub Releases:
-1. **Nová verze (Release):** Když provedete změny ve skriptu (`apps/pnd/pnd.py`), musíte na GitHubu vytvořit nový **Tag** (např. `v0.9.9.9`) a publikovat ho jako **Release**.
-2. **Aktualizace HACS:** HACS si u uživatelů všimne nového Release tagu a nabídne jim automatickou aktualizaci.
-3. **hacs.json:** Soubor `hacs.json` v kořeni repozitáře slouží jako manifest (obsahuje název aplikace). Obvykle jej nemusíte upravovat, ledaže byste chtěli změnit název, přidat kompatibilitu minimálních verzí atd. HACS si vždy bere verzi primárně podle názvu GitHub Release Tagu.
-
 # Plány a nápady
 Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde na GitHubu
 - [ ] Zpracování více EANů (Elektroměrů)
@@ -382,6 +376,10 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [x] Distribuce a aktualizace přes HACS
       
 # Změny
+
+## Verze 1.0.0
+ - [x] Sjednocení enginů - podpora automatického přepnutí z Google Chrome na Mozilla Firefox v případě pádu či chybějícího ovladače.
+ - [x] Úprava struktury projektu pro plnou kompatibilitu a možnost aktualizací přes repozitář aplikací HACS.
 
 ## 3.11.2025 - 0.9.9.8
  - [x] Oprava zápisu nulových hodnot do atributu, týká se především probíhajícího období (měsíce) a budoucnosti [#81](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/81). Pro správné fungování je nutné opravit také karty zobrazující měsíční / týdenní agregaci!
