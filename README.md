@@ -158,7 +158,7 @@ pnd:
 8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
 
 > [!CAUTION]
-> ** POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
+> **POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
 
 Při úspěšném chodu skriptu:
 * jsou vytvořeny soubory ve složce /homeassistant/appdaemon/apps/pnd
@@ -204,7 +204,7 @@ Pokud se vyskytne problém (např data se nestahují):
 ### Instalace HACS
 Postup instalalce HACS do Home Assistant je uvedený na [stránkách projektu](https://hacs.xyz/).
 
-> [!CAUTION]
+> [!WARNING]
 > **DŮLEŽITÉ: Povolení AppDaemon v HACS**
 > Aplikace AppDaemon nejsou v HACS vidět ve výchozím stavu a musí se nejprve zapnout v nastavení. Postupujte takto:
 > 1. V Home Assistant otevřete **Nastavení (Settings) > Zařízení a služby (Devices & services)**.
