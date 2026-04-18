@@ -1,10 +1,9 @@
 # Home Assistant ČEZ Distribuce Portál Naměřených Dat
 
-🎉 **DŮLEŽITÉ: Byla vydána verze v1.0.0 s podporou HACS a automatickým sjednocením enginů Chrome a Firefox!** 🎉
-* **Stávající uživatelé:** Můžete si ponechat svou aktuální instalaci a aktualizovat ručně (překopírováním obsahu nového skriptu `pnd.py`). Mějte ale na paměti, že v tomto režimu HACS nebude hlídat ani instalovat budoucí aktualizace.
-* **Noví uživatelé:** Důrazně doporučujeme instalaci prostřednictvím HACS, který zajistí bezproblémové stahování i budoucí aktualizace skriptu.
-
-:exclamation::exclamation::exclamation: **1.10.2025 se změnila struktura přihlašování do PND** aktualizovaná verze je upravená s ohledem na tyto změny :exclamation::exclamation::exclamation:
+> [!IMPORTANT]
+> 🎉 **DŮLEŽITÉ: Byla vydána verze v1.0.0 s podporou HACS a automatickým sjednocením enginů Chrome a Firefox!** 🎉
+> * **Stávající uživatelé:** Můžete si ponechat svou aktuální instalaci a aktualizovat ručně (překopírováním obsahu nového skriptu `pnd.py` - poroz, zde v repo je umístěný /apps/pnd/pnd.py, nikoliv v kořeni repo). Mějte ale na paměti, že v tomto režimu HACS nebude hlídat ani instalovat budoucí aktualizace. Doporučuji migraci na HACS - staačí odstranit původní pnd.py a provést instalaci přes HACS. Konfigurace,... je zachována.
+> * **Noví uživatelé:** Důrazně doporučujeme instalaci prostřednictvím HACS, který zajistí bezproblémové stahování i budoucí aktualizace skriptu.
 
 Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech.
 
@@ -384,10 +383,11 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Zpracování více EANů (Elektroměrů)
 - [ ] Vyřešit unikátní ID senzorů, aby senzor byl spravovatelný v HA
 - [x] Distribuce a aktualizace přes HACS
+- [ ] Refactor některých částí pro stabilitu při timeoutech, bezpečnost a kvalitu kódu
       
 # Změny
 
-## Verze 1.0.0
+## Verze 18.4.2026 v1.0.0
  - [x] Sjednocení enginů - podpora automatického přepnutí z Google Chrome na Mozilla Firefox v případě pádu či chybějícího ovladače.
  - [x] Úprava struktury projektu pro plnou kompatibilitu a možnost aktualizací přes repozitář aplikací HACS.
  - [x] Odstraněna závislost na starší verzi numpy (již není nutné specifikovat `numpy==1.26.4`, skript funguje s nejnovější verzí).
