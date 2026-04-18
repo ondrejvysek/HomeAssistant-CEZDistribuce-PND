@@ -32,7 +32,8 @@ Výsledkem pak může být například takovýto dashboard (návod na jeho výro
 
 ![](/obrazky/00-prehled.png)
 
-**POZOR: Pokud již používáte AppDaemon nebo máte ve svém HA výše uvedené entity, návod je potřeba odpovídajícím způsobem upravit, abyste zachovali to co již používáte. Takové úpravy nejsou v návodu uvedeny.**
+> [!CAUTION]
+> **POZOR: Pokud již používáte AppDaemon nebo máte ve svém HA výše uvedené entity, návod je potřeba odpovídajícím způsobem upravit, abyste zachovali to co již používáte. Takové úpravy nejsou v návodu uvedeny.**
 
 ## Co je potřeba
 1. Přihlášení do Distribučního Portálu
@@ -156,7 +157,8 @@ pnd:
 7. do složky _apps_ nahrajte soubor [pnd.py](https://raw.githubusercontent.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/refs/heads/main/pnd.py) - pozor, je nutné nahrát čistý skript, ideálně CTRL+C a CTRL+V ve FileEditoru.
 8. restartujte doplněk AppDaemon. Pozn.: při aktualizaci souboru pnd.py za novější, není nutné doplněk restartovat
 
-** POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
+> [!CAUTION]
+> ** POZOR: Data se neaktualizují sama od sebe, ale pouze automatickým nebo ručním spuštěním automatizace (viz níže)** případně ručním vyvoláním události run_pnd v nástrojích pro vývojáře.
 
 Při úspěšném chodu skriptu:
 * jsou vytvořeny soubory ve složce /homeassistant/appdaemon/apps/pnd
