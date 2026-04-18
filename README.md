@@ -6,8 +6,6 @@
 
 :exclamation::exclamation::exclamation: **1.10.2025 se změnila struktura přihlašování do PND** aktualizovaná verze je upravená s ohledem na tyto změny :exclamation::exclamation::exclamation:
 
- **Stávající uživatelé pozor**, 16.4.2024 byla vydána nová verze modulu Numpy, která není kompatibilní s aktuální verzí AppDaemon (resp Pandas). Do nastavení AppDaemon je nutné přidat modul `numpy==1.26.4` viz zde: https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/42#issuecomment-2174487719. Problém se projeví po restartu AppDaemon, tj např při aktualizaci HA. Pro nové instalace je dokumentace aktualizovaná.
-
 Script a nastavení Home Assistant slouží pro vyčítání dat o spotřebě a výrobě elektřiny z distribučního portálu https://www.cezdistribuce.cz/ v denních úhrnech.
 
 Pokud se vám řešení líbí, můžete mne podpořit v další tvorbě a rozvoji - za což vám předem děkuji :)
@@ -82,7 +80,7 @@ AppDaemon je volně spojené, vícevláknové, sandboxované prostředí pro spo
      - pro Chrome: `chromium-chromedriver` a `chromium`
      - pro Firefox: `firefox`, `geckodriver`, `fontconfig`, `ttf-freefont`, `dbus`
      *Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně*
-   - v části "Python packages" přidejte _selenium_, _pandas_, _numpy==1.26.4_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+   - v části "Python packages" přidejte _selenium_, _pandas_, _numpy_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
    - Klikněte na "Uložit".
 4. Spusťte doplněk AppDaemon
 
@@ -392,6 +390,7 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 ## Verze 1.0.0
  - [x] Sjednocení enginů - podpora automatického přepnutí z Google Chrome na Mozilla Firefox v případě pádu či chybějícího ovladače.
  - [x] Úprava struktury projektu pro plnou kompatibilitu a možnost aktualizací přes repozitář aplikací HACS.
+ - [x] Odstraněna závislost na starší verzi numpy (již není nutné specifikovat `numpy==1.26.4`, skript funguje s nejnovější verzí).
 
 ## 3.11.2025 - 0.9.9.8
  - [x] Oprava zápisu nulových hodnot do atributu, týká se především probíhajícího období (měsíce) a budoucnosti [#81](https://github.com/ondrejvysek/HomeAssistant-CEZDistribuce-PND/issues/81). Pro správné fungování je nutné opravit také karty zobrazující měsíční / týdenní agregaci!
