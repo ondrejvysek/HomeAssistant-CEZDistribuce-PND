@@ -190,6 +190,42 @@ action:
 mode: single
 ```
 
+### Automatické spuštění po restartu AppDaemon
+Pokud chcete zajistit, aby se skript spustil automaticky po každém restartu AppDaemonu (např. po restartu celého Home Assistanta), můžete využít následující pomocný skript a automatizaci. Toto řešení pomáhá zejména v situacích, kdy se po startu systému skript sám nevyvolá (nápad a řešení od uživatele @wejto).
+
+1. Ve složce `apps/pnd/` (nebo tam, kde máte `pnd.py`) vytvořte nový soubor `init_helper.py` s tímto obsahem:
+```python
+import appdaemon.plugins.hass.hassapi as hass
+
+class InitHelper(hass.Hass):
+    def initialize(self):
+        self.fire_event("APPDAEMON_READY")
+```
+
+2. V souboru `apps.yaml` přidejte nad (nebo pod) definici `pnd` tento blok:
+```yaml
+init_helper:
+  module: init_helper
+  class: InitHelper
+```
+
+3. V Home Assistantu vytvořte novou automatizaci (přepněte do YAML režimu), která zachytí událost `APPDAEMON_READY`:
+```yaml
+alias: Run actions after AppDaemon starts
+description: Spustí PND po startu AppDaemonu s prodlevou 15 sekund pro zajištění závislostí
+trigger:
+  - platform: event
+    event_type: "APPDAEMON_READY"
+condition: []
+action:
+  - delay:
+      seconds: 15
+  - event: run_pnd
+    event_data: {}
+mode: single
+```
+Tímto zajistíte, že se skript spustí 15 sekund po úplném načtení všech aplikací v AppDaemonu.
+
 ### Řešení problémů se skriptem
 Nejprve zkuste spustit znovu, skript simuluje pohyb na webové stránce a není garantováno, že stránka bude vždy stejná a skript doběhne úspěšně dokonce, případně restartujte AppDaemon a spusťe skript znovu.
 
@@ -391,6 +427,10 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Refactor některých částí pro stabilitu při timeoutech, bezpečnost a kvalitu kódu
       
 # Změny
+
+## 20.4.2026 v1.0.1
+ - [x] Přidána podpora pro automatické spuštění po restartu AppDaemon (díky @wejto).
+ - [x] Oprava chybějícího importu modulu `math`.
 
 ## 18.4.2026 v1.0.0
  - [x] Sjednocení enginů - podpora automatického přepnutí z Google Chrome na Mozilla Firefox v případě pádu či chybějícího ovladače.
