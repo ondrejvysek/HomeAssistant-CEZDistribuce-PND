@@ -191,16 +191,9 @@ mode: single
 ```
 
 ### Automatické spuštění po restartu AppDaemon
-Pokud chcete zajistit, aby se skript spustil automaticky po každém restartu AppDaemonu (např. po restartu celého Home Assistanta), můžete využít následující pomocný skript a automatizaci. Toto řešení pomáhá zejména v situacích, kdy se po startu systému skript sám nevyvolá (nápad a řešení od uživatele @wejto).
+Pokud chcete zajistit, aby se skript spustil automaticky po každém restartu AppDaemonu (např. po restartu celého Home Assistanta), můžete využít pomocný skript `init_helper.py` a automatizaci v Home Assistantu. Toto řešení pomáhá zejména v situacích, kdy se po startu systému skript sám nevyvolá (nápad a řešení od uživatele @wejto).
 
-1. Ve složce `apps/pnd/` (nebo tam, kde máte `pnd.py`) vytvořte nový soubor `init_helper.py` s tímto obsahem:
-```python
-import appdaemon.plugins.hass.hassapi as hass
-
-class InitHelper(hass.Hass):
-    def initialize(self):
-        self.fire_event("APPDAEMON_READY")
-```
+1. Ujistěte se, že ve složce `apps/pnd/` (nebo tam, kde máte `pnd.py`) existuje soubor `init_helper.py`.
 
 2. V souboru `apps.yaml` přidejte nad (nebo pod) definici `pnd` tento blok:
 ```yaml
