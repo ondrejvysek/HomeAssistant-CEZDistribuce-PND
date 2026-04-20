@@ -143,6 +143,10 @@ logs:
 
 ```
 ---
+init_helper:
+  module: init_helper
+  class: InitHelper
+
 pnd:
   module: pnd
   class: pnd
@@ -189,6 +193,28 @@ action:
     event_data: {}
 mode: single
 ```
+
+### Automatické spuštění po restartu AppDaemon
+Pokud chcete zajistit, aby se skript spustil automaticky po každém restartu AppDaemonu (např. po restartu celého Home Assistanta), můžete využít pomocný skript `init_helper.py` a automatizaci v Home Assistantu. Toto řešení pomáhá zejména v situacích, kdy se po startu systému skript sám nevyvolá (nápad a řešení od uživatele @wejto).
+
+Pomocný skript `init_helper.py` je součástí instalace a stačí jej pouze aktivovat v `apps.yaml` (viz [Vytvoření aplikace PND v AppDaemon](#vytvoření-aplikace-pnd-v-appdaemon)).
+
+V Home Assistantu pak vytvořte novou automatizaci (přepněte do YAML režimu), která zachytí událost `APPDAEMON_READY`:
+```yaml
+alias: Run actions after AppDaemon starts
+description: Spustí PND po startu AppDaemonu s prodlevou 15 sekund pro zajištění závislostí
+trigger:
+  - platform: event
+    event_type: "APPDAEMON_READY"
+condition: []
+action:
+  - delay:
+      seconds: 15
+  - event: run_pnd
+    event_data: {}
+mode: single
+```
+Tímto zajistíte, že se skript spustí 15 sekund po úplném načtení všech aplikací v AppDaemonu.
 
 ### Řešení problémů se skriptem
 Nejprve zkuste spustit znovu, skript simuluje pohyb na webové stránce a není garantováno, že stránka bude vždy stejná a skript doběhne úspěšně dokonce, případně restartujte AppDaemon a spusťe skript znovu.
@@ -391,6 +417,10 @@ Pokud máte nějaké přání, nápad na vylepšení - vytvořte požadavek zde 
 - [ ] Refactor některých částí pro stabilitu při timeoutech, bezpečnost a kvalitu kódu
       
 # Změny
+
+## 20.4.2026 v1.0.1
+ - [x] Přidána podpora pro automatické spuštění po restartu AppDaemon (díky @wejto).
+ - [x] Oprava chybějícího importu modulu `math`.
 
 ## 18.4.2026 v1.0.0
  - [x] Sjednocení enginů - podpora automatického přepnutí z Google Chrome na Mozilla Firefox v případě pádu či chybějícího ovladače.
