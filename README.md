@@ -77,10 +77,10 @@ AppDaemon je volně spojené, vícevláknové, sandboxované prostředí pro spo
 2. Vyhledejte AppDaemon, zvolte jej a klikněte na "Nainstalovat". Instalace dle rychlosti vašeho HW a internetu je hotova do několika minut.
 3. Po instalaci přejděte do nastavení AppDaemon. Skript podporuje Chrome i Firefox. Důrazně doporučujeme nainstalovat oba prohlížeče! Pokud po aktualizaci doplňku Chrome přestane fungovat (což se občas stává), skript se automaticky pokusí přepnout na Firefox, aby stahování dat nebylo přerušeno.
    - v části "System Packages" přidejte:
-     - pro Chrome: `chromium-chromedriver` a `chromium`
+     - pro Chrome: `chromium-driver` a `chromium`
      - pro Firefox: `firefox`, `geckodriver`, `fontconfig`, `ttf-freefont`, `dbus`
      *Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně*
-   - v části "Python packages" přidejte _selenium_, _pandas_, _numpy_ a _bs4_. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
+   - v části "Python packages" přidejte `selenium`, `pandas`, `numpy` a `bs4`. Pozn.: pokaždé vložte jeden název a stiskněte enter, je nutné přidávat postupně
    - Klikněte na "Uložit".
 4. Spusťte doplněk AppDaemon
 
